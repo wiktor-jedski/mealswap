@@ -4,6 +4,7 @@
    --secondary-color: #8A8635;
    --tertiary-color: #E9C891;
    --on-primary-color: white;
+   --link: #084d00;
 }
 
 /* site-wide applicable */
@@ -13,6 +14,15 @@
 
 body {
    background: var(--tertiary-color);
+}
+
+a, a:hover {
+   color: var(--link);
+
+}
+
+a:active {
+   color: black;
 }
 
 .desktop-only {
@@ -41,6 +51,10 @@ body {
    background-color: var(--primary-color-dark);
 }
 
+.navbar {
+   width: 100%;
+}
+
 .navbar__search-form {
    display: inline-block;
 }
@@ -63,4 +77,24 @@ body {
    text-align: center;
 }
 
+/* Carousel */
 
+.section-carousel {
+   background-color: var(--primary-color-dark);
+   color: var(--on-primary-color);
+   text-align: center;
+}
+
+/* Call to action */
+
+.section-cta {
+   text-align: center;
+   }
+
+/* Footer */
+
+.section-footer {
+   background-color: var(--primary-color-dark);
+   color: var(--on-primary-color);
+   text-align: center;
+}
