@@ -1,0 +1,66 @@
+:root {
+   --primary-color: #D06224;
+   --primary-color-dark: #AE431E;
+   --secondary-color: #8A8635;
+   --tertiary-color: #E9C891;
+   --on-primary-color: white;
+}
+
+/* site-wide applicable */
+.container-fluid {
+   padding: 3% 7%;
+}
+
+body {
+   background: var(--tertiary-color);
+}
+
+.desktop-only {
+    visibility: hidden;
+}
+
+@media (min-width: 1028px) {
+   .desktop-only {
+   visibility: inherit
+   }
+}
+
+.big-heading {
+  font-size: 3.5rem;
+  line-height: 1.5;
+  font-weight: 600;
+ }
+
+.medium-heading {
+   font-size: 2rem;
+   line-height: 1.5
+}
+
+/* Header */
+.section-header {
+   background-color: var(--primary-color-dark);
+}
+
+.navbar__search-form {
+   display: inline-block;
+}
+
+.navbar-logo {
+   font-size: 2rem;
+   font-weight: bold;
+}
+
+/* Hello */
+
+.section-hello {
+   background-color: var(--primary-color-dark);
+   color: var(--on-primary-color);
+}
+
+/* Features */
+
+.section-features {
+   text-align: center;
+}
+
+
