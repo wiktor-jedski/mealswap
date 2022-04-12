@@ -4,6 +4,10 @@
    --secondary-color: #8A8635;
    --tertiary-color: #E9C891;
    --on-primary-color: white;
+<<<<<<< HEAD
+=======
+   --link: #084d00;
+>>>>>>> refs/remotes/origin/main
 }
 
 /* site-wide applicable */
@@ -15,6 +19,18 @@ body {
    background: var(--tertiary-color);
 }
 
+<<<<<<< HEAD
+=======
+a, a:hover {
+   color: var(--link);
+
+}
+
+a:active {
+   color: black;
+}
+
+>>>>>>> refs/remotes/origin/main
 .desktop-only {
     visibility: hidden;
 }
@@ -41,6 +57,13 @@ body {
    background-color: var(--primary-color-dark);
 }
 
+<<<<<<< HEAD
+=======
+.navbar {
+   width: 100%;
+}
+
+>>>>>>> refs/remotes/origin/main
 .navbar__search-form {
    display: inline-block;
 }
@@ -63,4 +86,28 @@ body {
    text-align: center;
 }
 
+<<<<<<< HEAD
 
+=======
+/* Carousel */
+
+.section-carousel {
+   background-color: var(--primary-color-dark);
+   color: var(--on-primary-color);
+   text-align: center;
+}
+
+/* Call to action */
+
+.section-cta {
+   text-align: center;
+   }
+
+/* Footer */
+
+.section-footer {
+   background-color: var(--primary-color-dark);
+   color: var(--on-primary-color);
+   text-align: center;
+}
+>>>>>>> refs/remotes/origin/main
