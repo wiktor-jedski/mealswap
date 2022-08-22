@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        {% block head %}
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="author" content="wiktor-jedski"/>
+        <meta name="application-name" content="mealswap"/>
+        <meta name="description" content="A web app for meal tracking, suggestion, replacement"/>
+
+        {% block styles %}
+            <!-- Bootstrap CSS -->
+            {{ bootstrap.load_css() }}
+            <!--Custom CSS-->
+            <link rel="stylesheet" href="{{ url_for('.static', filename='css/styles.css') }}">
+            <script src="https://kit.fontawesome.com/611ca9dd08.js" crossorigin="anonymous"></script>
+        {% endblock %}
+
+        <title>mealswap 🍲</title>
+        {% endblock %}
+    </head>
+    <body>
+        <section class="section-header" id="header__navbar">
+            <nav class="navbar sticky-top navbar-dark navbar-expand-md" role="navigation">
+                <div class="container-fluid row justify-content-evenly">
+                    <a class="navbar-brand navbar-logo col-2" href="#">mealswap 🍲</a>
+                    <div class="col-3">
+                        <form class="navbar-form" action="">
+                            <div class="input-group">
+                                <input class="form-control" type="text" placeholder="Find replacement for..."
+                                       aria-label="Search">
+                                <div class="input-group-btn">
+                                    <button class="btn btn-primary" type="submit">
+                                        🔍
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse text-center col-4" id="navbarNav">
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item">
+                                <a class="nav-link mx-3" href="#">Advanced search</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link mx-3" href="#">Calendar</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link mx-3" href="#">Contact</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link mx-3" href="#">Settings</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link mx-3" href="#">Log in</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </section>
+        <!-- Page content -->
+        {% block content %}{% endblock %}
+
+        {% block scripts %}
+            <!-- Optional JavaScript -->
+            {{ bootstrap.load_js() }}
+        {% endblock %}
+    </body>
+</html>

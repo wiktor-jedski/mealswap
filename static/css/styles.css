@@ -4,10 +4,7 @@
    --secondary-color: #8A8635;
    --tertiary-color: #E9C891;
    --on-primary-color: white;
-<<<<<<< HEAD
-=======
-   --link: #084d00;
->>>>>>> refs/remotes/origin/main
+   --link: #0d7e00;
 }
 
 /* site-wide applicable */
@@ -19,8 +16,6 @@ body {
    background: var(--tertiary-color);
 }
 
-<<<<<<< HEAD
-=======
 a, a:hover {
    color: var(--link);
 
@@ -30,7 +25,6 @@ a:active {
    color: black;
 }
 
->>>>>>> refs/remotes/origin/main
 .desktop-only {
     visibility: hidden;
 }
@@ -57,13 +51,10 @@ a:active {
    background-color: var(--primary-color-dark);
 }
 
-<<<<<<< HEAD
-=======
 .navbar {
    width: 100%;
 }
 
->>>>>>> refs/remotes/origin/main
 .navbar__search-form {
    display: inline-block;
 }
@@ -86,9 +77,6 @@ a:active {
    text-align: center;
 }
 
-<<<<<<< HEAD
-
-=======
 /* Carousel */
 
 .section-carousel {
@@ -110,4 +98,3 @@ a:active {
    color: var(--on-primary-color);
    text-align: center;
 }
->>>>>>> refs/remotes/origin/main
