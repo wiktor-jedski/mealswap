@@ -23,49 +23,51 @@
     <body>
         <section class="section-header" id="header__navbar">
             <nav class="navbar sticky-top navbar-dark navbar-expand-md" role="navigation">
-                <div class="container-fluid row justify-content-evenly">
-                    <a class="navbar-brand navbar-logo col-2" href="#">mealswap 🍲</a>
-                    <div class="col-3">
-                        <form class="navbar-form" action="">
-                            <div class="input-group">
-                                <input class="form-control" type="text" placeholder="Find replacement for..."
-                                       aria-label="Search">
-                                <div class="input-group-btn">
-                                    <button class="btn btn-primary" type="submit">
-                                        🔍
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse text-center col-4" id="navbarNav">
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item">
-                                <a class="nav-link mx-3" href="#">Advanced search</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link mx-3" href="#">Calendar</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link mx-3" href="#">Contact</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link mx-3" href="#">Settings</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link mx-3" href="#">Log in</a>
-                            </li>
-                        </ul>
-                    </div>
+                <a class="navbar-brand navbar-logo" href="{{ url_for('home') }}">mealswap 🍲</a>
+
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse text-center justify-content-end" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link mx-3" href="#">Advanced search</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link mx-3" href="#">Calendar</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link mx-3" href="#">Contact</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link mx-3" href="#">Settings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link mx-3" href="#">Log in</a>
+                        </li>
+                    </ul>
                 </div>
             </nav>
         </section>
         <!-- Page content -->
         {% block content %}{% endblock %}
+
+        {% block footer %}
+        <section class="section-footer">
+            <div class="container-fluid">
+                <div>
+                    <span class="mx-3">About</span>
+                    <span class="mx-3">Contact</span>
+                    <span class="mx-3">Contributors</span>
+                </div>
+                <div class="justify-content-center">
+                    MIT License, 2022
+                </div>
+            </div>
+        </section>
+        {% endblock %}
 
         {% block scripts %}
             <!-- Optional JavaScript -->
