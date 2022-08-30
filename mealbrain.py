@@ -16,6 +16,3 @@ class MealBrain:
     def delete(self, key):
         """Deletes a product from the database."""
 
-    def add_meal(self, name, unit, **kwargs):
-        """Adds a meal to the database."""
-

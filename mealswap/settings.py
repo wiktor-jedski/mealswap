@@ -1,0 +1,6 @@
+"""App config"""
+
+SECRET_KEY = 'PLACEHOLDER'
+BOOTSTRAP_BTN_STYLE = 'success'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///mealswap.db'
+SQLALCHEMY_TRACK_MODIFICATIONS = False
