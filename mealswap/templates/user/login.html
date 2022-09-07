@@ -4,14 +4,15 @@
 {% block content %}
 <section class="section-header">
     <div class="container-fluid">
-        <h1 class="big-heading">Diet for: DATE</h1>
+        <h1 class="big-heading">Glad to see you back!</h1>
     </div>
 </section>
-<section class="section-day">
+<section class="section-form">
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-4 col-md-12">
                 {{ render_form(form) }}
+                <p class="mt-3">Don't have an account? Register <a href="{{ url_for('user.register') }}">here.</a></p>
             </div>
         </div>
     </div>

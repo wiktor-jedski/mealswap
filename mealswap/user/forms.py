@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
-from mealswap.user.models import User
+from mealswap.models import User
 
 
 class RegisterForm(FlaskForm):
@@ -30,6 +30,7 @@ class RegisterForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
+    remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
     def __init__(self, *args, **kwargs):
@@ -55,3 +56,11 @@ class LoginForm(FlaskForm):
             return False
 
         return True
+
+
+class DateForm(FlaskForm):
+    date = DateField('Enter date to lookup diet:', validators=[DataRequired()])
+    submit = SubmitField('Find')
+
+    def __init__(self, *args, **kwargs):
+        super(DateForm, self).__init__(*args, **kwargs)

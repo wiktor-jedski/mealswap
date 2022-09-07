@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Just a couple more steps...</h1>
+    </div>
+</section>
+<section class="section-form">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-12">
+                {% if email %}
+                <p>A confirmation link has been sent to your email at {{ email }}. Please follow the link to continue.</p>
+                {% else %}
+                    {% with messages = get_flashed_messages() %}
+                            <p>{{ messages[-1] }}</p>
+                    {% endwith %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

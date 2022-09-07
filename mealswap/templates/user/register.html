@@ -9,15 +9,6 @@
 </section>
 <section class="section-form">
     <div class="container-fluid">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <ul class="flashes">
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
         <div class="row justify-content-center">
             <div class="col-lg-4 col-md-12">
                 <form method="post">

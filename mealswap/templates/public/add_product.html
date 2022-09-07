@@ -4,13 +4,16 @@
 {% block content %}
 <section class="section-header">
     <div class="container-fluid">
-        <h1 class="big-heading">Diet for: DATE</h1>
+        <h1 class="big-heading">Add a new product</h1>
     </div>
 </section>
-<section class="section-day">
+<section class="section-form">
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-4 col-md-12">
+                {% with messages = get_flashed_messages() %}
+                <p>{{ messages[-1] }}</p>
+                {% endwith %}
                 {{ render_form(form) }}
             </div>
         </div>

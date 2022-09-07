@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Add a new meal</h1>
+    </div>
+</section>
+<section class="section-form">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-12">
+                {% with messages = get_flashed_messages() %}
+                <p>{{ messages[-1] }}</p>
+                {% endwith %}
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item p-1">
+                        <a class="btn btn-outline-success active" id="pills-empty-tab" data-toggle="pill" href="#pills-empty"
+                           role="tab" aria-controls="pill-empty" aria-selected="true">Enter a meal with no products</a>
+                    </li>
+                    <li class="nav-item p-1">
+                        <a class="btn btn-outline-success" id="pills-compose-tab" data-toggle="pill" href="#pills-compose"
+                           role="tab" aria-controls="pill-compose" aria-selected="false">Compose a meal out of products</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="pills-empty" role="tabpanel" aria-labelledby="pills-empty-tab">
+                        {{ render_form(empty_meal_form) }}
+                    </div>
+                    <div class="tab-pane fade" id="pills-compose" role="tabpanel" aria-labelledby="pills-compose-tab">
+                        <p>Not yet implemented. :(</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

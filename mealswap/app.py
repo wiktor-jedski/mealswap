@@ -5,6 +5,7 @@ from mealswap.extensions import (
     login_manager,
     db,
     Bootstrap4,
+    mail
 )
 
 
@@ -25,6 +26,7 @@ def register_extensions(app):
     login_manager.init_app(app)
     db.init_app(app)
     Bootstrap4(app)
+    mail.init_app(app)
     return None
 
 
@@ -38,3 +40,4 @@ def register_blueprints(app):
 def register_commands(app):
     """Registers Click commands"""
     app.cli.add_command(commands.create)
+    app.cli.add_command(commands.add_admin)
