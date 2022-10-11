@@ -3,7 +3,6 @@ from mealswap.extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship
-from sqlalchemy.schema import Table
 
 
 class User(UserMixin, db.Model):
@@ -18,6 +17,9 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, nullable=False, default=False)
     confirmed_on = db.Column(db.DateTime, nullable=True)
     diets = relationship('DayDiet', back_populates='user')
+    items = relationship('Item', back_populates='user')
+    settings = relationship('Settings', back_populates='user')
+    ratings = relationship('RatingsAssoc')
 
     def __init__(self, email, password, name, confirmed, admin=False, confirmed_on=None):
         self.email = email
@@ -41,12 +43,36 @@ class User(UserMixin, db.Model):
         return f"<User({self.email})>"
 
 
-diet_item_table = Table(
-    "diet_item",
-    db.Model.metadata,
-    db.Column("day_diet_id", db.ForeignKey('day_diet.id')),
-    db.Column("item_id", db.ForeignKey('item.id'))
-)
+class Settings(db.Model):
+    __tablename__ = 'settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = relationship('User', back_populates='settings')
+    protein_goal = db.Column(db.Float)
+    carb_goal = db.Column(db.Float)
+    fat_goal = db.Column(db.Float)
+    calories_goal = db.Column(db.Float)
+    locale = db.Column(db.String(250))
+
+
+class RatingsAssoc(db.Model):
+    __tablename__ = 'ratings_assoc'
+
+    user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
+    item_id = db.Column(db.ForeignKey('item.id'), primary_key=True)
+    rating = db.Column(db.Integer, nullable=False)
+    item = relationship("Item")
+
+
+class DietItemAssoc(db.Model):
+    __tablename__ = "diet_item_assoc"
+
+    index = db.Column(db.Integer, index=True, primary_key=True, autoincrement=True)
+    diet_id = db.Column(db.ForeignKey('day_diet.id'))
+    item_id = db.Column(db.ForeignKey('item.id'))
+    qty = db.Column(db.Float, nullable=False)
+    item = relationship("Item")
 
 
 class DayDiet(db.Model):
@@ -56,20 +82,23 @@ class DayDiet(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = relationship('User', back_populates='diets')
     date = db.Column(db.Date, nullable=False)
-    items = relationship("Item", secondary=diet_item_table)
+    weight = db.Column(db.Float)
+    items = relationship("DietItemAssoc")
 
-    def __init__(self, user_id, user, date):
-        self.user_id = user_id
+    def __init__(self, user, date):
+        self.user_id = user.id
         self.user = user
         self.date = date
 
 
-item_product_table = Table(
-    "item_product",
-    db.Model.metadata,
-    db.Column("item_id", db.ForeignKey('item.id')),
-    db.Column("product_id", db.ForeignKey('product.id'))
-)
+class ItemProductAssoc(db.Model):
+    __tablename__ = "item_product_assoc"
+
+    index = db.Column(db.Integer, index=True, primary_key=True)
+    item_id = db.Column(db.ForeignKey('item.id'))
+    product_id = db.Column(db.ForeignKey('product.id'))
+    qty = db.Column(db.Float, nullable=False)
+    product = relationship("Product")
 
 
 class Item(db.Model):
@@ -81,15 +110,22 @@ class Item(db.Model):
     carb = db.Column(db.Float, nullable=False)
     fat = db.Column(db.Float, nullable=False)
     calories = db.Column(db.Float, nullable=False)
+    qty = db.Column(db.Float, nullable=False)
     link = db.Column(db.String(250))
     recipe = db.Column(db.Text)
-    products = relationship("Product", secondary=item_product_table)
+    saved = db.Column(db.Boolean)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = relationship('User', back_populates='items')
+    products = relationship("ItemProductAssoc")
 
-    def __init__(self, name, protein, carb, fat, calories=None, link=None, recipe=None):
+    def __init__(self, name, protein, carb, fat, user, calories=None, link=None, recipe=None, saved=None):
         self.name = name
         self.protein = protein
         self.carb = carb
         self.fat = fat
+        self.user_id = user.id
+        self.user = user
+        self.qty = 0
         if calories:
             self.calories = calories
         else:
@@ -98,6 +134,10 @@ class Item(db.Model):
             self.link = link
         if recipe:
             self.recipe = recipe
+        if saved:
+            self.saved = True
+        else:
+            self.saved = False
 
 
 class Product(db.Model):

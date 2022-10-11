@@ -4,6 +4,7 @@
    --secondary-color: #8A8635;
    --tertiary-color: #E9C891;
    --on-primary-color: white;
+   --on-tertiary-color: black;
    --link: #0d7e00;
 }
 
@@ -18,7 +19,6 @@ body {
 
 a, a:hover {
    color: var(--link);
-
 }
 
 a:active {
@@ -27,6 +27,10 @@ a:active {
 
 .desktop-only {
     visibility: hidden;
+}
+
+input {
+    width: 100%;
 }
 
 @media (min-width: 1028px) {
@@ -44,6 +48,14 @@ a:active {
 .medium-heading {
    font-size: 2rem;
    line-height: 1.5
+}
+
+.small-heading {
+    font-size: 1.5rem;
+}
+
+.dropdown-menu {
+    background: var(--tertiary-color);
 }
 
 /* Navbar */
@@ -100,6 +112,18 @@ a:active {
 
 /* Form */
 
-.section-form {
-    background-color: var(--tertiary-color);
+.section-form, .section-options, .section-diet {
+   background-color: var(--tertiary-color);
+}
+
+/* Jumbotrons */
+
+.section-jumbo {
+    background-color: var(--primary-color-dark);
+    color: var(--on-primary-color);
+}
+
+.jumbotron {
+    background: var(--tertiary-color);
+    color: var(--on-tertiary-color);
 }

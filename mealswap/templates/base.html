@@ -34,7 +34,7 @@
                     {% if user.is_active %}
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link mx-3" href="#">Search</a>
+                            <a class="nav-link mx-3" href="{{ url_for('public.search') }}">Search</a>
                         </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -46,13 +46,13 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link mx-3" href="#">Calendar</a>
+                            <a class="nav-link mx-3" href="{{ url_for('public.home') }}">Calendar</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link mx-3" href="#">Settings</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link mx-3" href="#">Contact</a>
+                            <a class="nav-link mx-3" href="{{ url_for('public.contact') }}">Contact</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link mx-3" href="{{ url_for('user.logout') }}">Log Out</a>

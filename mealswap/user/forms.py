@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, DateField
-from wtforms.validators import DataRequired, Email, EqualTo, Length
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, DateField, FloatField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange
 from mealswap.models import User
 
 
@@ -59,8 +59,31 @@ class LoginForm(FlaskForm):
 
 
 class DateForm(FlaskForm):
-    date = DateField('Enter date to lookup diet:', validators=[DataRequired()])
+    date = DateField('Enter date:', validators=[DataRequired()])
     submit = SubmitField('Find')
 
     def __init__(self, *args, **kwargs):
         super(DateForm, self).__init__(*args, **kwargs)
+
+
+class SearchForm(FlaskForm):
+    search = StringField('Search for:', validators=[DataRequired()])
+    submit = SubmitField('Search')
+
+    def __init__(self, *args, **kwargs):
+        super(SearchForm, self).__init__(*args, **kwargs)
+
+
+class QtyForm(FlaskForm):
+    qty = FloatField('Qty:', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
+    submit = SubmitField('Add')
+
+
+class DeleteForm(FlaskForm):
+    confirm = BooleanField('', validators=[DataRequired()])
+    submit = SubmitField('Delete')
+
+
+class EditForm(FlaskForm):
+    qty = FloatField('New qty:', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
+    submit = SubmitField('Edit')

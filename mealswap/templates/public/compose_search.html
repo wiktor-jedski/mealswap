@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_field %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Search for: {{ searched }}</h1>
+    </div>
+</section>
+{% if products.first() %}
+<section class="section-jumbo">
+    {% for product in products %}
+        <div class="row justify-content-center p-3">
+            <div class="col-lg-4 col-md-12">
+                <div class="jumbotron">
+                    <h1 class="display-4">{{ product.name }}</h1>
+                    <p class="lead">Calories: {{ product.calories|round(2) }}</p>
+                    <p class="lead">Protein: {{ product.protein|round(2) }}</p>
+                    <p class="lead">Carbs: {{ product.carb|round(2) }}</p>
+                    <p class="lead">Fat: {{ product.fat|round(2) }}</p>
+                    <hr class="my-4">
+                    <form method="post">
+                        {{ form.csrf_token() }}
+                        {{ render_field(form.qty) }}
+                        <input type="submit" class="btn btn-success" name="{{ product.id }}" value="Add">
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="section-diet">
+    <div class="container-fluid">
+        <p>No search results for: {{ searched }}. Consider adding
+        <a href="{{ url_for('public.add_product') }}">a product</a>.</p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -4,10 +4,9 @@
 {% block content %}
 <section class="section-header">
     <div class="container-fluid">
-        <h1 class="big-heading">Diet for: {{ date }}</h1>
-        <p>Total: {{ total['calories']|round(2) }} kcal, {{ total['protein']|round(2) }} g protein,
+        <h1 class="big-heading">Compose meal: {{ item.name }}</h1>
+        <p>Macros per 100g: {{ total['calories']|round(2) }} kcal, {{ total['protein']|round(2) }} g protein,
             {{ total['carbs']|round(2) }} g carbs, {{ total['fat']|round(2) }} g fat</p>
-        <p>Goal: Not yet implemented :(</p>
     </div>
 </section>
 
@@ -33,7 +32,7 @@
                                         {{ render_field(search_form.search) }}
                                         <div class="row justify-content-around">
                                             <div class="col-6">
-                                                {{ render_field(search_form.submit) }}
+                                                {{ render_field(search_form.submitSearchForm) }}
                                             </div>
                                             <div class="col-6">
                                                 <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
@@ -48,12 +47,12 @@
             </div>
             <div class="col-lg-3 col-md-6 text-center">
                 <!-- COPY -->
-                <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#copyModal">Copy Day</button>
+                <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#copyModal">Copy Meal</button>
                 <div class="modal fade" id="copyModal" tabindex="-1" aria-labelledby="copyModalLabel" aria-hidden="true">
                     <div class="modal-dialog text-left">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="copyModalLabel">Copy Day</h5>
+                                <h5 class="modal-title" id="copyModalLabel">Copy Meal</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -61,11 +60,11 @@
                             <div class="modal-body">
                                 <div class="container">
                                     <form method="post">
-                                        {{ date_form.csrf_token() }}
-                                        {{ render_field(date_form.date) }}
+                                        {{ copy_form.csrf_token() }}
+                                        {{ render_field(copy_form.search) }}
                                         <div class="row">
                                             <div class="col-6">
-                                                {{ render_field(date_form.submit) }}
+                                                {{ render_field(copy_form.submitCopyMealForm) }}
                                             </div>
                                             <div class="col-6">
                                                 <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
@@ -80,12 +79,12 @@
             </div>
             <div class="col-lg-3 col-md-6 text-center">
                 <!-- DELETE -->
-                <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#deleteModal">Delete All</button>
+                <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#deleteModal">Delete Meal</button>
                 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
                     <div class="modal-dialog text-left">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Delete All</h5>
+                                <h5 class="modal-title" id="deleteModalLabel">Delete Meal</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -94,11 +93,10 @@
                                 <div class="container">
                                     <form method="post">
                                         {{ delete_form.csrf_token() }}
-                                        <p>Are you sure? All current data for this day will be lost.</p>
-                                        {{ render_field(delete_form.confirm) }}
+                                        <p>Are you sure? All current data for this meal will be lost.</p>
                                         <div class="row">
                                             <div class="col-6">
-                                                {{ render_field(delete_form.submit) }}
+                                                {{ render_field(delete_form.submitDeleteForm) }}
                                             </div>
                                             <div class="col-6">
                                                 <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
@@ -119,7 +117,7 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-8 col-md-12">
-                {% if diet.items %}
+                {% if item.products %}
                 <div class="row font-weight-bold">
                     <div class="col-4">
                         Name/Calories/Weight
@@ -135,10 +133,10 @@
                     </div>
                 </div>
                 <hr>
-                {% for a in diet.items %}
+                {% for a in item.products %}
                 <div class="row">
                     <div class="col-10 small-heading">
-                        {{ a.item.name }}: {{ (a.item.calories * a.qty / 100 )|round(2)}} kcal
+                        {{ a.product.name }}: {{ (a.product.calories * a.qty / 100)|round(2) }} kcal
                     </div>
                     <div class="col-2">
                         <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#Modal{{ a.index }}">
@@ -148,7 +146,7 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="Modal{{ a.index }}Label">Edit qty for: {{ a.item.name }}</h5>
+                                        <h5 class="modal-title" id="Modal{{ a.index }}Label">Edit qty for: {{ a.product.name }}</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -176,25 +174,56 @@
                 </div>
                 <div class="row py-2">
                     <div class="col-4">
-                        {{ (a.qty)|round(2) }} g
+                        {{ a.qty|round(2) }} g
                     </div>
                     <div class="col-2">
-                        {{ (a.item.protein * a.qty / 100)|round(2) }}
+                        {{ (a.product.protein * a.qty / 100)|round(2) }}
                     </div>
                     <div class="col-2">
-                        {{ (a.item.carb * a.qty / 100)|round(2) }}
+                        {{ (a.product.carb * a.qty / 100)|round(2) }}
                     </div>
                     <div class="col-2">
-                        {{ (a.item.fat * a.qty / 100)|round(2) }}
+                        {{ (a.product.fat * a.qty / 100)|round(2) }}
                     </div>
                     <div class="col-2">
-                        <a href="{{ url_for('user.delete_item_in_day', index=a.index, diet_id=diet.id, date=date) }}" class="btn btn-danger btn-sm btn-block">Delete</a>
+                        <a href="{{ url_for('public.delete_product_in_meal', item_id=item.id, index=a.index) }}" class="btn btn-danger btn-sm btn-block">Delete</a>
                     </div>
                 </div>
                 <hr>
                 {% endfor %}
+                <div class="row py-2 justify-content-center">
+                    <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#saveModal">Save Meal</button>
+                    <div class="modal fade" id="saveModal" tabindex="-1" aria-labelledby="saveModalLabel" aria-hidden="true">
+                        <div class="modal-dialog text-left">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="saveModalLabel">Save Meal</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="container">
+                                        <form method="post">
+                                            {{ save_form.csrf_token() }}
+                                            <p>Are you sure? This meal will be closed for editing, and you will be able to add it to diet.</p>
+                                            <div class="row justify-content-around">
+                                                <div class="col-6">
+                                                    {{ render_field(save_form.submitSaveForm) }}
+                                                </div>
+                                                <div class="col-6">
+                                                    <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% else %}
-                No items yet. Maybe you want to add something?
+                No products yet. Maybe you want to add something?
                 {% endif %}
             </div>
         </div>
