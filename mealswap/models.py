@@ -118,14 +118,15 @@ class Item(db.Model):
     user = relationship('User', back_populates='items')
     products = relationship("ItemProductAssoc")
 
-    def __init__(self, name, protein, carb, fat, user, calories=None, link=None, recipe=None, saved=None):
+    def __init__(self, name, protein, carb, fat, user, qty=100, calories=None, link=None, recipe=None, saved=None):
         self.name = name
         self.protein = protein
         self.carb = carb
         self.fat = fat
         self.user_id = user.id
         self.user = user
-        self.qty = 0
+        if qty:
+            self.qty = qty
         if calories:
             self.calories = calories
         else:

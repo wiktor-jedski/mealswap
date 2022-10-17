@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Add a new product</h1>
+    </div>
+</section>
+<section class="section-form">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-4 col-md-12">
+                {% with messages = get_flashed_messages() %}
+                <p>{{ messages[-1] }}</p>
+                {% endwith %}
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item p-1 w-100">
+                        <a class="btn btn-outline-success active w-100" id="pills-search-tab" data-toggle="pill" href="#pills-search"
+                           role="tab" aria-controls="pill-search" aria-selected="true">Search and Rate</a>
+                    </li>
+                    <li class="nav-item p-1 w-100">
+                        <a class="btn btn-outline-success w-100" id="pills-discover-tab" data-toggle="pill" href="#pills-discover"
+                           role="tab" aria-controls="pill-discover" aria-selected="false">Discover and Rate</a>
+                    </li>
+                </ul>
+                <div class="tab-content" id="pills-tabContent">
+                    <div class="tab-pane fade show active" id="pills-search" role="tabpanel" aria-labelledby="pills-search-tab">
+                        {{ render_form(search_form) }}
+                    </div>
+                    <div class="tab-pane fade" id="pills-discover" role="tabpanel" aria-labelledby="pills-discover-tab">
+                        <p class="text-center">Rate randomly suggested meals/products.</p>
+                        {{ render_form(discover_form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

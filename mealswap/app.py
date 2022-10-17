@@ -41,3 +41,5 @@ def register_commands(app):
     """Registers Click commands"""
     app.cli.add_command(commands.create)
     app.cli.add_command(commands.add_admin)
+    app.cli.add_command(commands.import_meals)
+    return None

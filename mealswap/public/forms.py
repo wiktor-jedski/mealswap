@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, FloatField, TextAreaField, DateField, DecimalField, BooleanField
-from wtforms.validators import DataRequired, NumberRange, Optional
+from wtforms.validators import DataRequired, NumberRange, Optional, URL
 
 
 class ProductForm(FlaskForm):
@@ -50,7 +50,7 @@ class EmptyMealForm(FlaskForm):
 
 class CompositeMealForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
-    link = StringField('Link to the recipe (optional)')
+    link = StringField('Link to the recipe (optional)', validators=[URL()])
     recipe = TextAreaField('Recipe (optional)')
     submitCompositeMealForm = SubmitField('Create composite meal')
 
@@ -128,3 +128,15 @@ class SaveForm(FlaskForm):
 class CopyMealForm(FlaskForm):
     search = StringField('Search for:', validators=[DataRequired()])
     submitCopyMealForm = SubmitField('Search')
+
+
+class LinkRecipeForm(FlaskForm):
+    link = StringField('Link to the recipe (optional)', validators=[URL()])
+    recipe = TextAreaField('Recipe (optional)')
+    submitLinkRecipeForm = SubmitField('Save Optional Data')
+
+
+class RatingForm(FlaskForm):
+    submitYumRatingForm = SubmitField('😋\nYum')
+    submitMehRatingForm = SubmitField('😑\nMeh')
+    submitYuckRatingForm = SubmitField('🤮\nYuck')

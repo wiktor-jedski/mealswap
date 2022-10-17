@@ -10,7 +10,7 @@
 
 /* site-wide applicable */
 .container-fluid {
-   padding: 3% 7%;
+   padding: 2% 5%;
 }
 
 body {
@@ -108,6 +108,10 @@ input {
    background-color: var(--primary-color-dark);
    color: var(--on-primary-color);
    text-align: center;
+}
+
+a.section-footer {
+    color: var(--on-primary-color);
 }
 
 /* Form */

@@ -1,10 +1,11 @@
 from math import sqrt, acos, pi
-from flask import render_template, Blueprint, redirect, url_for, flash, Response, request, abort
+from flask import render_template, Blueprint, redirect, url_for, flash, Response, request, abort, session
 from flask_login import current_user, login_required
 from mealswap.user.forms import DateForm
 from mealswap.extensions import login_manager, db
-from mealswap.models import User, Product, Item, ItemProductAssoc
+from mealswap.models import User, Product, Item, ItemProductAssoc, RatingsAssoc
 from mealswap.public.forms import *
+from random import randrange
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
@@ -43,12 +44,12 @@ def home() -> str or Response:
 def search() -> str or Response:
     """Renders meal replacement search."""
     name_form = SearchForm()
-    if name_form.validate_on_submit():
+    if name_form.validate_on_submit() and name_form.submitSearchForm.data:
         search_str = name_form.search.data
         return redirect(url_for('public.search_replace', searched=search_str))
 
     macro_form = MacroForm()
-    if macro_form.validate_on_submit():
+    if macro_form.validate_on_submit() and macro_form.submitMacroForm.data:
         protein = macro_form.protein.data
         carb = macro_form.carb.data
         fat = macro_form.fat.data
@@ -56,7 +57,7 @@ def search() -> str or Response:
         return redirect(url_for('public.search_macro', protein=protein, carb=carb, fat=fat, calories=calories))
 
     discover_form = DiscoverForm()
-    if discover_form.validate_on_submit():
+    if discover_form.validate_on_submit() and discover_form.submitDiscoverForm.data:
         return redirect(url_for('public.search_discover'))
 
     return render_template('public/search.html',
@@ -77,7 +78,7 @@ def search_replace(searched) -> str or Response:
 @blueprint.route("/search/replacement", methods=['GET', 'POST'])
 def search_macro() -> str:
     """Renders results for searching replacement by macros."""
-    items = Item.query.all()
+    items = Item.query.filter(Item.saved == True).all()
     item_id = request.args.get('item_id', default=None)
     if item_id:
         item = Item.query.filter_by(id=item_id).first()
@@ -188,7 +189,7 @@ def add_meal() -> str or Response:
         item = Item(
             name=empty_meal_form.name.data,
             protein=empty_meal_form.protein.data,
-            carb=empty_meal_form.protein.data,
+            carb=empty_meal_form.carb.data,
             fat=empty_meal_form.fat.data,
             user=current_user,
             link=empty_meal_form.link.data,
@@ -225,9 +226,18 @@ def add_meal() -> str or Response:
 def compose_meal(item_id) -> str or Response:
     """Renders form for composing meals."""
     item = Item.query.filter_by(id=item_id).first()
-    if item.saved:
+    if item.saved or item.user != current_user:
         return abort(code=412)
     total = {'calories': item.calories, 'protein': item.protein, 'carbs': item.carb, 'fat': item.fat}
+
+    link_recipe_form = LinkRecipeForm()
+    if link_recipe_form.validate_on_submit() and link_recipe_form.submitLinkRecipeForm.data:
+        item.link = link_recipe_form.link.data
+        item.recipe = link_recipe_form.recipe.data
+        db.session.commit()
+        return redirect(url_for('public.compose_meal', item_id=item_id))
+    link_recipe_form.link.data = item.link
+    link_recipe_form.recipe.data = item.recipe
 
     copy_form = CopyMealForm()
     if copy_form.validate_on_submit() and copy_form.submitCopyMealForm.data:
@@ -249,19 +259,6 @@ def compose_meal(item_id) -> str or Response:
         assoc = db.session.query(ItemProductAssoc).get(index)
         old_qty = assoc.qty
         assoc.qty = edit_form.qty.data
-
-        # total = {'calories': 0, 'protein': 0, 'carbs': 0, 'fat': 0, 'qty': 0}
-        # for a in item.products:
-        #     total['qty'] += a.qty
-        #     total['calories'] += a.qty * a.product.calories
-        #     total['protein'] += a.qty * a.product.protein
-        #     total['carbs'] += a.qty * a.product.carb
-        #     total['fat'] += a.qty * a.product.fat
-        #
-        # item.carb = total['carbs'] / total['qty']
-        # item.calories = total['calories'] / total['qty']
-        # item.protein = total['protein'] / total['qty']
-        # item.fat = total['fat'] / total['qty']
 
         delta = assoc.qty - old_qty
         old_item_qty = item.qty
@@ -294,7 +291,8 @@ def compose_meal(item_id) -> str or Response:
         return redirect(url_for('public.add_meal'))
 
     return render_template('public/compose_meal.html', edit_form=edit_form, copy_form=copy_form, save_form=save_form,
-                           delete_form=delete_form, user=current_user, item=item, total=total, search_form=search_form)
+                           delete_form=delete_form, user=current_user, item=item, total=total, search_form=search_form,
+                           link_recipe_form=link_recipe_form)
 
 
 @blueprint.route("/compose_meal/<item_id>/<searched>", methods=['GET', 'POST'])
@@ -302,7 +300,6 @@ def compose_meal(item_id) -> str or Response:
 def compose_search(item_id, searched) -> str or Response:
     """Renders search result for adding products to composed meals."""
     products = Product.query.filter(Product.name.contains(searched))
-    print(products.all())
     form = QtyForm()
     if request.method == 'POST':
         item = Item.query.filter_by(id=item_id).first()
@@ -316,19 +313,6 @@ def compose_search(item_id, searched) -> str or Response:
         assoc = ItemProductAssoc(qty=qty)
         assoc.product = product
         item.products.append(assoc)
-
-        # total = {'calories': 0, 'protein': 0, 'carbs': 0, 'fat': 0, 'qty': 0}
-        # for a in item.products:
-        #     total['qty'] += a.qty
-        #     total['calories'] += a.qty * a.product.calories
-        #     total['protein'] += a.qty * a.product.protein
-        #     total['carbs'] += a.qty * a.product.carb
-        #     total['fat'] += a.qty * a.product.fat
-        #
-        # item.carb = total['carbs'] / total['qty']
-        # item.calories = total['calories'] / total['qty']
-        # item.protein = total['protein'] / total['qty']
-        # item.fat = total['fat'] / total['qty']
 
         old_item_qty = item.qty
         item.qty += qty
@@ -403,3 +387,120 @@ def delete_product_in_meal() -> Response:
     db.session.delete(assoc)
     db.session.commit()
     return redirect(url_for('public.compose_meal', item_id=item_id))
+
+
+@blueprint.route('/edit_meals')
+@login_required
+def edit_meals() -> str:
+    """Renders open meals available for editing."""
+    items = Item.query.filter_by(saved=False, user=current_user)
+    return render_template('public/edit_meals.html', user=current_user, items=items)
+
+
+@blueprint.route('/edit_ratings', methods=['GET', 'POST'])
+@login_required
+def edit_ratings() -> str or Response:
+    """Renders ratings for meals with an option to change them."""
+    search_form = SearchForm()
+    if search_form.validate_on_submit() and search_form.submitSearchForm.data:
+        search_str = search_form.search.data
+        return redirect(url_for('public.edit_ratings_search', searched=search_str))
+
+    return render_template('public/edit_ratings.html', user=current_user, search_form=search_form)
+
+
+@blueprint.route('/edit_ratings/<searched>')
+@login_required
+def edit_ratings_search(searched: str) -> str or Response:
+    """Renders results for searching ratings to be edited."""
+    assoc_items_rated = RatingsAssoc.query.filter(RatingsAssoc.user_id == current_user.id).all()
+    items_searched = Item.query.filter(Item.name.contains(searched), Item.saved == True).all()
+    items_rated = [assoc.item for assoc in assoc_items_rated]
+    items = [item for item in items_searched if item in items_rated]
+
+    return render_template('public/edit_ratings_search.html', user=current_user, items=items, searched=searched)
+
+
+@blueprint.route('/rate', methods=['GET', 'POST'])
+@login_required
+def rate() -> str or Response:
+    """Renders instruction page for rating."""
+    search_form = SearchForm()
+    if search_form.validate_on_submit() and search_form.submitSearchForm.data:
+        search_str = search_form.search.data
+        return redirect(url_for('public.rate_search', searched=search_str))
+
+    discover_form = DiscoverForm()
+    if discover_form.validate_on_submit() and discover_form.submitDiscoverForm.data:
+        return redirect(url_for('public.rate_discover'))
+
+    return render_template('public/rate.html', user=current_user, search_form=search_form, discover_form=discover_form)
+
+
+@blueprint.route('/rate/<searched>')
+@login_required
+def rate_search(searched) -> str:
+    """Renders results for searching meals to be rated."""
+    items_searched = Item.query.filter(Item.name.contains(searched), Item.saved == True).all()
+    assoc_items_rated = RatingsAssoc.query.filter(RatingsAssoc.user_id == current_user.id).all()
+
+    items_rated = [assoc.item for assoc in assoc_items_rated]
+    items = [item for item in items_searched if item not in items_rated]
+
+    return render_template('public/rate_search.html', user=current_user, items=items, searched=searched)
+
+
+@blueprint.route('/rate/discover')
+@login_required
+def rate_discover():
+    """Renders a random meal to be rated."""
+    items = session.get('rateable_items')
+    if items:
+        items = db.session.query(Item).filter(Item.id.in_(items)).all()
+    else:
+        items = Item.query.filter(Item.saved == True).all()
+        items_rated = RatingsAssoc.query.filter(RatingsAssoc.user_id == current_user.id).all()
+        print(items_rated)
+        for assoc in items_rated:
+            try:
+                items.remove(assoc.item)
+            except ValueError:
+                continue
+        rateable_items = [item.id for item in items]
+        session['rateable_items'] = rateable_items
+
+    if items:
+        item = items[randrange(len(items))]
+    else:
+        item = None
+    return render_template('public/rate_discover.html', user=current_user, item=item)
+
+
+@blueprint.route('/rate/commit')
+@login_required
+def rate_commit() -> Response:
+    """Adds rating for the meal and returns the user to previous directory."""
+    rating = request.args.get('rating')
+    item_id = request.args.get('item_id')
+    searched = request.args.get('searched')
+    edit = request.args.get('edit')
+
+    if edit:
+        assoc = RatingsAssoc.query.filter_by(item_id=item_id, user_id=current_user.id).first()
+        assoc.rating = int(rating)
+        db.session.commit
+        flash(message=f"Rating for: '{assoc.item.name}' successfully updated!", category="success")
+        return redirect(url_for('public.edit_ratings'))
+
+    user = db.session.query(User).get(current_user.id)
+    assoc = RatingsAssoc(rating=int(rating))
+    item = db.session.query(Item).get(item_id)
+    assoc.item = item
+    user.ratings.append(assoc)
+    db.session.commit()
+
+    if searched:
+        return redirect(url_for('public.rate_search', searched=searched))
+    else:
+        session['rateable_items'] = session['rateable_items'].remove(item.id)
+        return redirect(url_for('public.rate_discover'))

@@ -13,7 +13,18 @@
 <section class="section-options">
     <div class="container-fluid">
         <div class="row justify-content-center">
-            <div class="col-lg-3 col-md-6 text-center">
+            <div class="col-lg-9 col-md-12">
+                {{ link_recipe_form.csrf_token() }}
+                {{ render_form(link_recipe_form) }}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-diet">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-3 col-md-4 text-center">
                 <!-- ADD -->
                 <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#addModal">Add Item</button>
                 <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
@@ -45,7 +56,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 text-center">
+            <div class="col-lg-3 col-md-4 text-center">
                 <!-- COPY -->
                 <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#copyModal">Copy Meal</button>
                 <div class="modal fade" id="copyModal" tabindex="-1" aria-labelledby="copyModalLabel" aria-hidden="true">
@@ -77,14 +88,14 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-3 col-md-6 text-center">
+            <div class="col-lg-3 col-md-4 text-center">
                 <!-- DELETE -->
-                <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#deleteModal">Delete Meal</button>
+                <button type="button" class="btn btn-success w-75" data-toggle="modal" data-target="#deleteModal">Delete Items</button>
                 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
                     <div class="modal-dialog text-left">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="deleteModalLabel">Delete Meal</h5>
+                                <h5 class="modal-title" id="deleteModalLabel">Delete Items</h5>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -110,12 +121,7 @@
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-<section class="section-diet">
-    <div class="container-fluid">
-        <div class="row justify-content-center">
+        <div class="row justify-content-center mt-3">
             <div class="col-lg-8 col-md-12">
                 {% if item.products %}
                 <div class="row font-weight-bold">

@@ -75,7 +75,7 @@ class SearchForm(FlaskForm):
 
 
 class QtyForm(FlaskForm):
-    qty = FloatField('Qty:', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
+    qty = FloatField('Qty (g):', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
     submit = SubmitField('Add')
 
 

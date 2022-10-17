@@ -45,14 +45,20 @@
                                 <a class="dropdown-item" href="{{ url_for('public.add_meal') }}">Meal</a>
                             </div>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
+                                Edit
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="{{ url_for('public.edit_meals') }}">Meal</a>
+                                <a class="dropdown-item" href="{{ url_for('public.edit_ratings') }}">Rating</a>
+                            </div>
+                        </li>
                         <li class="nav-item">
-                            <a class="nav-link mx-3" href="{{ url_for('public.home') }}">Calendar</a>
+                            <a class="nav-link mx-3" href="{{ url_for('public.rate') }}">Rate</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link mx-3" href="#">Settings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link mx-3" href="{{ url_for('public.contact') }}">Contact</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link mx-3" href="{{ url_for('user.logout') }}">Log Out</a>
@@ -60,9 +66,6 @@
                     </ul>
                     {% else %}
                     <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link mx-3" href="#">Contact</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link mx-3" href="{{ url_for('user.login') }}">Log In</a>
                         </li>
@@ -77,10 +80,8 @@
         {% block footer %}
         <section class="section-footer">
             <div class="container-fluid">
-                <div>
-                    <span class="mx-3">About</span>
-                    <span class="mx-3">Contact</span>
-                    <span class="mx-3">Contributors</span>
+                <div class="nav-item">
+                    <a href="{{ url_for('public.contact') }}" style="color: white">Contact & Info</a>
                 </div>
                 <div class="justify-content-center">
                     MIT License, 2022
