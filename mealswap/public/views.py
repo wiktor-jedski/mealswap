@@ -6,6 +6,8 @@ from mealswap.extensions import login_manager, db
 from mealswap.models import User, Product, Item, ItemProductAssoc, RatingsAssoc
 from mealswap.public.forms import *
 from random import randrange
+import numpy as np
+from scipy.optimize import minimize
 
 blueprint = Blueprint('public', __name__, static_folder='../static')
 
@@ -77,7 +79,7 @@ def search_replace(searched) -> str or Response:
 
 @blueprint.route("/search/replacement", methods=['GET', 'POST'])
 def search_macro() -> str:
-    """Renders results for searching replacement by macros."""
+    """Renders results for searching replacement by macronutrients."""
     items = Item.query.filter(Item.saved == True).all()
     item_id = request.args.get('item_id', default=None)
     if item_id:
@@ -124,7 +126,10 @@ def search_macro() -> str:
                 den1 += i.calories * i.calories
                 den2 += calories * calories
             denominator = sqrt(den1) * sqrt(den2)
-        distance = acos(numerator / denominator)
+        try:
+            distance = acos(numerator / denominator)
+        except ZeroDivisionError:
+            continue
         similarity = 1 - distance * 2 / pi
         similarity_list.append((similarity, i))
     similarity_list.sort(key=lambda x: x[0], reverse=True)
@@ -139,7 +144,65 @@ def search_macro() -> str:
 @blueprint.route("/search/discover")
 def search_discover() -> str:
     """Renders results for searching replacement by ratings."""
-    return render_template('public/search_discover.html', user=current_user)
+
+    def grad(params, num_users, num_items, num_features, Y, R, lambda_):
+        params = np.reshape(params, (num_users + num_items, num_features))
+        X, Theta = np.split(params, [num_items])
+        X_grad = np.matmul(np.multiply(np.matmul(X, np.transpose(Theta)) - Y, R), Theta) + lambda_ * X
+        Theta_grad = np.matmul(np.transpose(np.multiply(np.matmul(X, np.transpose(Theta)) - Y, R)), X) \
+                     + lambda_ * Theta
+        g = np.concatenate((X_grad, Theta_grad))
+        g = g.flatten()
+        return g
+
+    def f(params, num_users, num_items, num_features, Y, R, lambda_):
+        params = np.reshape(params, (num_users + num_items, num_features))
+        X, Theta = np.split(params, [num_items])
+        cost = (np.sum(np.multiply(np.matmul(X, np.transpose(Theta)) - Y, R) ** 2)) / 2 + \
+               lambda_ / 2 * (np.sum(Theta ** 2) + np.sum(X ** 2))
+        return cost
+
+    ratings = RatingsAssoc.query.all()
+    num_ratings = RatingsAssoc.query.filter(RatingsAssoc.user_id == current_user.id).count()
+    users = User.query.all()
+    items = Item.query.all()
+    num_users = users[-1].id + 1
+    num_items = items[-1].id + 1
+    num_features = 10
+    lambda_ = 10
+
+    Y = np.zeros((num_items, num_users), np.uint8)
+    for rating in ratings:
+        Y[rating.item_id, rating.user_id] = rating.rating
+    R = np.where(Y > 0, 1, 0)
+
+    X = np.random.rand(num_items, num_features)
+    Theta = np.random.rand(num_users, num_features)
+    initial_parameters = np.concatenate((X, Theta))
+    initial_parameters = initial_parameters.flatten()
+
+    result = minimize(f, initial_parameters, args=(num_users, num_items, num_features, Y, R, lambda_),
+                      method='Newton-CG', jac=grad)
+    matrix = result.x
+
+    result = np.reshape(matrix, (num_users + num_items, num_features))
+    X, Theta = np.split(result, [num_items])
+    predictions = np.matmul(X, np.transpose(Theta))
+    R = np.invert(R.astype(np.bool)).astype(np.uint8)
+    predictions = np.multiply(predictions, R)[:, current_user.id]
+    indexed_predictions = [(predictions[i], i) for i in range(len(predictions))]
+    indexed_predictions.sort(reverse=True, key=lambda x: x[0])
+    indices = [x[1] for x in indexed_predictions]
+    indices = indices[:(len(indices) - num_ratings)]
+    sorted_items = []
+    for index in indices:
+        item = Item.query.filter(Item.id == index).first()
+        if item:
+            sorted_items.append(Item.query.filter(Item.id == index).first())
+        else:
+            continue
+
+    return render_template('public/search_discover.html', user=current_user, items=sorted_items)
 
 
 @blueprint.route("/contact")

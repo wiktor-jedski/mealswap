@@ -4,14 +4,37 @@
 {% block content %}
 <section class="section-header">
     <div class="container-fluid">
-        <h1 class="big-heading">Discover new meals</h1>
+        <h1 class="big-heading">Your recommendations</h1>
     </div>
 </section>
-<section class="section-diet">
-    <div class="row justify-content-center p-3">
-        <div class="col-lg-4 col-md-12">
-            <p>Not yet implemented</p>
+{% if items %}
+<section class="section-jumbo">
+    {% for item in items %}
+        <div class="row justify-content-center p-3">
+            <div class="col-lg-4 col-md-12">
+                <div class="jumbotron">
+                    <h1 class="display-4">{{ item.name }}</h1>
+                    <p class="lead">Calories: {{ item.calories|round(2) }}</p>
+                    <p class="lead">Protein: {{ item.protein|round(2) }}</p>
+                    <p class="lead">Carbs: {{ item.carb|round(2) }}</p>
+                    <p class="lead">Fat: {{ item.fat|round(2) }}</p>
+                    <hr class="my-4">
+                    {% if item.link %}
+                    <p><a href="{{ item.link }}" target="_blank">Link</a></p>
+                    {% endif %}
+                    {% if item.recipe %}
+                    <p>{{ item.recipe }}</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="section-diet">
+    <div class="container-fluid">
+        <p>No recommendations available.</p>
     </div>
 </section>
+{% endif %}
 {% endblock %}
