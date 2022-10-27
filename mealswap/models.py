@@ -40,7 +40,7 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         """User class representation as a string"""
-        return f"<User({self.email})>"
+        return f"<User({self.name})#{self.id}>"
 
 
 class Settings(db.Model):
@@ -59,8 +59,9 @@ class Settings(db.Model):
 class RatingsAssoc(db.Model):
     __tablename__ = 'ratings_assoc'
 
-    user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
-    item_id = db.Column(db.ForeignKey('item.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey('user.id'))
+    item_id = db.Column(db.ForeignKey('item.id'))
     rating = db.Column(db.Integer, nullable=False)
     item = relationship("Item")
 
@@ -68,7 +69,7 @@ class RatingsAssoc(db.Model):
 class DietItemAssoc(db.Model):
     __tablename__ = "diet_item_assoc"
 
-    index = db.Column(db.Integer, index=True, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, index=True, primary_key=True, autoincrement=True)
     diet_id = db.Column(db.ForeignKey('day_diet.id'))
     item_id = db.Column(db.ForeignKey('item.id'))
     qty = db.Column(db.Float, nullable=False)
@@ -94,7 +95,7 @@ class DayDiet(db.Model):
 class ItemProductAssoc(db.Model):
     __tablename__ = "item_product_assoc"
 
-    index = db.Column(db.Integer, index=True, primary_key=True)
+    id = db.Column(db.Integer, index=True, primary_key=True)
     item_id = db.Column(db.ForeignKey('item.id'))
     product_id = db.Column(db.ForeignKey('product.id'))
     qty = db.Column(db.Float, nullable=False)
@@ -110,7 +111,9 @@ class Item(db.Model):
     carb = db.Column(db.Float, nullable=False)
     fat = db.Column(db.Float, nullable=False)
     calories = db.Column(db.Float, nullable=False)
-    qty = db.Column(db.Float, nullable=False)
+    has_weight = db.Column(db.Boolean, nullable=False)
+    servings = db.Column(db.Integer)
+    qty = db.Column(db.Float)
     link = db.Column(db.String(250))
     recipe = db.Column(db.Text)
     saved = db.Column(db.Boolean)
@@ -118,15 +121,17 @@ class Item(db.Model):
     user = relationship('User', back_populates='items')
     products = relationship("ItemProductAssoc")
 
-    def __init__(self, name, protein, carb, fat, user, qty=100, calories=None, link=None, recipe=None, saved=None):
+    def __init__(self, name, protein, carb, fat, user, has_weight, qty, servings, calories=None, link=None, recipe=None,
+                 saved=None):
         self.name = name
         self.protein = protein
         self.carb = carb
         self.fat = fat
         self.user_id = user.id
         self.user = user
-        if qty:
-            self.qty = qty
+        self.has_weight = has_weight
+        self.qty = qty
+        self.servings = servings
         if calories:
             self.calories = calories
         else:
@@ -150,6 +155,7 @@ class Product(db.Model):
     carb = db.Column(db.Float, nullable=False)
     fat = db.Column(db.Float, nullable=False)
     calories = db.Column(db.Float, nullable=False)
+    weight_per_ea = db.Column(db.Float)
 
     def __init__(self, name, protein, carb, fat, calories=None):
         self.name = name
@@ -160,3 +166,4 @@ class Product(db.Model):
             self.calories = calories
         else:
             self.calories = protein*4 + carb*4 + fat*9
+        self.weight_per_ea = None

@@ -7,20 +7,24 @@
         <h1 class="big-heading">Copy meal: {{ searched }}</h1>
     </div>
 </section>
-{% if items.first() %}
+{% if items %}
 <section class="section-jumbo">
     {% for item in items %}
         <div class="row justify-content-center p-3">
-            <div class="col-lg-4 col-md-12">
+            <div class="col-lg-6 col-md-12">
                 <div class="jumbotron">
+                    {% if item.link %}
+                    <h1 class="display-4"><a href="{{ item.link }}" target="_blank">{{ item.name }}</a></h1>
+                    {% else %}
                     <h1 class="display-4">{{ item.name }}</h1>
-                    <p class="lead">Calories: {{ item.calories|round(2) }}</p>
-                    <p class="lead">Protein: {{ item.protein|round(2) }}</p>
-                    <p class="lead">Carbs: {{ item.carb|round(2) }}</p>
-                    <p class="lead">Fat: {{ item.fat|round(2) }}</p>
+                    {% endif %}
+                    <p class="lead">Calories per 100g: {{ item.calories|round(2) }}</p>
+                    <p class="lead">Protein per 100g: {{ item.protein|round(2) }}</p>
+                    <p class="lead">Carbs per 100g: {{ item.carb|round(2) }}</p>
+                    <p class="lead">Fat per 100g: {{ item.fat|round(2) }}</p>
                     <hr class="my-4">
                     <form method="post">
-                        <input type="submit" class="btn btn-success" name="{{ item.id }}" value="Copy">
+                        <input type="submit" class="btn btn-success btn-block" name="{{ item.id }}" value="Copy">
                     </form>
                 </div>
             </div>
@@ -29,7 +33,7 @@
 </section>
 {% else %}
 <section class="section-diet">
-    <div class="container-fluid">
+    <div class="container-fluid text-center">
         <p>No search results for: {{ searched }}.</p>
     </div>
 </section>

@@ -1,6 +1,6 @@
 from flask import Flask
 
-from mealswap import public, user, commands
+from mealswap import add, edit, public, rate, search, user, commands, diet
 from mealswap.extensions import (
     login_manager,
     db,
@@ -32,7 +32,12 @@ def register_extensions(app):
 
 def register_blueprints(app):
     """Registers Flask blueprints"""
+    app.register_blueprint(add.views.blueprint)
+    app.register_blueprint(diet.views.blueprint)
+    app.register_blueprint(edit.views.blueprint)
     app.register_blueprint(public.views.blueprint)
+    app.register_blueprint(rate.views.blueprint)
+    app.register_blueprint(search.views.blueprint)
     app.register_blueprint(user.views.blueprint)
     return None
 

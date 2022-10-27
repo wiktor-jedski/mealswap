@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_field %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Meal replacement search results</h1>
+        {% if name %}
+        <p>Replacements for: {{ name }}</p>
+        {% endif %}
+        <p>Query:
+        {% if calories %}
+        {{ calories }} kcal
+        {% endif %}
+        {% if protein %}
+        {{ protein }} g protein
+        {% endif %}
+        {% if carb %}
+        {{ carb }} g carbs
+        {% endif %}
+        {% if fat %}
+        {{ fat }} g fat
+        {% endif %}
+        </p>
+        {% with messages = get_flashed_messages() %}
+            <p class="font-weight-bold">{{ messages[-1] }}</p>
+        {% endwith %}
+    </div>
+</section>
+{% if items %}
+<section class="section-jumbo">
+    {% for item in items %}
+        <div class="row justify-content-center p-3">
+            <div class="col-lg-6 col-md-12">
+                <div class="jumbotron">
+                    {% if item[1].link %}
+                    <h1 class="display-4"><a href="{{ item[1].link }}" target="_blank">{{ item[1].name }}</a></h1>
+                    {% else %}
+                    <h1 class="display-4">{{ item[1].name }}</h1>
+                    {% endif %}
+                    <p class="lead">Similarity: {{ (item[0]*100)|round(2) }}%</p>
+                    <hr class="my-4">
+                    {% if item[1].has_weight %}
+                    <p class="lead">Calories per 100g: {{ item[1].calories|round(2) }}</p>
+                    <p class="lead">Protein per 100g: {{ item[1].protein|round(2) }}</p>
+                    <p class="lead">Carbs per 100g: {{ item[1].carb|round(2) }}</p>
+                    <p class="lead">Fat per 100g: {{ item[1].fat|round(2) }}</p>
+                    {% else %}
+                    <p class="lead">Calories per ea: {{ item[1].calories|round(2) }}</p>
+                    <p class="lead">Protein per ea: {{ item[1].protein|round(2) }}</p>
+                    <p class="lead">Carbs per ea: {{ item[1].carb|round(2) }}</p>
+                    <p class="lead">Fat per ea: {{ item[1].fat|round(2) }}</p>
+                    {% endif %}
+                    <hr class="my-4">
+                    {% if item[1].recipe %}
+                    <p>{{ item[1].recipe }}</p>
+                    {% endif %}
+                    <form method="post">
+                        {{ form.csrf_token() }}
+                        {{ render_field(form.date) }}
+                        {% if item[1].has_weight %}
+                        <div class="py-2">
+                            {{ render_field(form.qty) }}
+                            <input type="submit" class="btn btn-success" name="{{ item[1].id }}" value="Add">
+                        </div>
+                        {% endif %}
+                        {% if item[1].servings %}
+                        <div class="py-2">
+                            {{ render_field(form.ea) }}
+                            <input type="submit" class="btn btn-success" name="{{ item[1].id }}" value="Add">
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="section-diet">
+    <div class="container-fluid text-center">
+        <p>No results. Consider adding
+        <a href="{{ url_for('add.add_product') }}">a product</a> or
+        <a href="{{ url_for('add.add_meal') }}">a meal.</a></p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

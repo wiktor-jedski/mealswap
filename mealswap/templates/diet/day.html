@@ -33,7 +33,7 @@
                                         {{ render_field(search_form.search) }}
                                         <div class="row justify-content-around">
                                             <div class="col-6">
-                                                {{ render_field(search_form.submit) }}
+                                                {{ render_field(search_form.submitSearchForm) }}
                                             </div>
                                             <div class="col-6">
                                                 <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
@@ -95,10 +95,9 @@
                                     <form method="post">
                                         {{ delete_form.csrf_token() }}
                                         <p>Are you sure? All current data for this day will be lost.</p>
-                                        {{ render_field(delete_form.confirm) }}
                                         <div class="row">
                                             <div class="col-6">
-                                                {{ render_field(delete_form.submit) }}
+                                                {{ render_field(delete_form.submitDeleteForm) }}
                                             </div>
                                             <div class="col-6">
                                                 <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
@@ -131,19 +130,20 @@
                 </div>
                 <hr>
                 {% for a in diet.items %}
+                {% if a.item.has_weight %}
                 <div class="row">
                     <div class="col-10 small-heading">
                         {{ a.item.name }}: {{ (a.item.calories * a.qty / 100 )|round(2)}} kcal
                     </div>
                     <div class="col-2">
-                        <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#Modal{{ a.index }}">
+                        <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#Modal{{ a.id }}">
                             Edit
                         </button>
-                        <div class="modal fade" id="Modal{{ a.index }}" tabindex="-1" aria-labelledby="Modal{{ a.index }}Label" aria-hidden="true">
+                        <div class="modal fade" id="Modal{{ a.id }}" tabindex="-1" aria-labelledby="Modal{{ a.id }}Label" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="Modal{{ a.index }}Label">Edit qty for: {{ a.item.name }}</h5>
+                                        <h5 class="modal-title" id="Modal{{ a.id }}Label">Edit qty for: {{ a.item.name }}</h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -155,7 +155,7 @@
                                                 {{ render_field(edit_form.qty) }}
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <input type="submit" class="btn btn-success float-left" value="Edit" name="{{ a.index }}">
+                                                        <input type="submit" class="btn btn-success float-left" value="Edit" name="{{ a.id }}">
                                                     </div>
                                                     <div class="col-6">
                                                         <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
@@ -183,10 +183,68 @@
                         {{ (a.item.fat * a.qty / 100)|round(2) }}
                     </div>
                     <div class="col-2">
-                        <a href="{{ url_for('user.delete_item_in_day', index=a.index, diet_id=diet.id, date=date) }}" class="btn btn-danger btn-sm btn-block">Delete</a>
+                        <a href="{{ url_for('diet.delete_item_in_day', assoc_id=a.id, diet_id=diet.id, date=date) }}" class="btn btn-danger btn-sm btn-block">Delete</a>
                     </div>
                 </div>
                 <hr>
+                {% else %}
+                <div class="row">
+                    <div class="col-10 small-heading">
+                        {{ a.item.name }}: {{ (a.item.calories * a.qty)|round(2)}} kcal
+                    </div>
+                    <div class="col-2">
+                        <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#Modal{{ a.id }}">
+                            Edit
+                        </button>
+                        <div class="modal fade" id="ea_modal{{ a.id }}" tabindex="-1" aria-labelledby="ea_modal{{ a.id }}Label" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="ea_modal{{ a.id }}Label">Edit qty for: {{ a.item.name }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="container">
+                                            <form method="post">
+                                                {{ edit_form.csrf_token() }}
+                                                {{ render_field(ea_edit_form.qty) }}
+                                                <div class="row">
+                                                    <div class="col-6">
+                                                        <input type="submit" class="btn btn-success float-left" value="Edit" name="{{ a.id }}">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <button type="button" class="btn btn-secondary float-right" data-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row py-2">
+                    <div class="col-4">
+                        {{ a.qty }} ea
+                    </div>
+                    <div class="col-2">
+                        {{ (a.item.protein * a.qty)|round(2) }}
+                    </div>
+                    <div class="col-2">
+                        {{ (a.item.carb * a.qty)|round(2) }}
+                    </div>
+                    <div class="col-2">
+                        {{ (a.item.fat * a.qty)|round(2) }}
+                    </div>
+                    <div class="col-2">
+                        <a href="{{ url_for('diet.delete_item_in_day', assoc_id=a.id, diet_id=diet.id, date=date) }}" class="btn btn-danger btn-sm btn-block">Delete</a>
+                    </div>
+                </div>
+                <hr>
+                {% endif %}
                 {% endfor %}
                 {% else %}
                 No items yet. Maybe you want to add something?

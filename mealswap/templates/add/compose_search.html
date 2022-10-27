@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_field %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Search for: {{ searched }}</h1>
+        {% with messages = get_flashed_messages() %}
+            <p class="font-weight-bold">{{ messages[-1] }}</p>
+        {% endwith %}
+    </div>
+</section>
+{% if products %}
+<section class="section-jumbo">
+    {% for product in products %}
+        <div class="row justify-content-center p-3">
+            <div class="col-lg-6 col-md-12">
+                <div class="jumbotron">
+                    <h1 class="display-4">{{ product.name }}</h1>
+                    <p class="lead">Calories per 100g: {{ product.calories|round(2) }}</p>
+                    <p class="lead">Protein per 100g: {{ product.protein|round(2) }}</p>
+                    <p class="lead">Carbs per 100g: {{ product.carb|round(2) }}</p>
+                    <p class="lead">Fat per 100g: {{ product.fat|round(2) }}</p>
+                    <hr class="my-4">
+                    <form method="post">
+                        {{ form.csrf_token() }}
+                        <div class="py-2">
+                        {{ render_field(form.qty) }}
+                        <input type="submit" class="btn btn-success" name="{{ product.id }}" value="Add">
+                        </div>
+                        {% if product.weight_per_ea %}
+                        <div class="py-2">
+                        {{ render_field(form.ea) }}
+                        <input type="submit" class="btn btn-success" name="{{ product.id }}" value="Add">
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="section-diet">
+    <div class="container-fluid text-center">
+        <p>No search results for: {{ searched }}. Consider adding
+        <a href="{{ url_for('add.add_product') }}">a product</a>.</p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

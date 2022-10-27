@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_field %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Rate a random meal</h1>
+    </div>
+</section>
+{% if item %}
+<section class="section-jumbo">
+    <div class="row justify-content-center p-3">
+        <div class="col-lg-6 col-md-12">
+            <div class="jumbotron">
+                {% if item.link %}
+                <h1 class="display-4"><a href="{{ item.link }}" target="_blank">{{ item.name }}</a></h1>
+                {% else %}
+                <h1 class="display-4">{{ item.name }}</h1>
+                {% endif %}
+                {% if item.has_weight %}
+                <p class="lead">Calories per 100g: {{ item.calories|round(2) }}</p>
+                <p class="lead">Protein per 100g: {{ item.protein|round(2) }}</p>
+                <p class="lead">Carbs per 100g: {{ item.carb|round(2) }}</p>
+                <p class="lead">Fat per 100g: {{ item.fat|round(2) }}</p>
+                {% else %}
+                <p class="lead">Calories per ea: {{ item.calories|round(2) }}</p>
+                <p class="lead">Protein per ea: {{ item.protein|round(2) }}</p>
+                <p class="lead">Carbs per ea: {{ item.carb|round(2) }}</p>
+                <p class="lead">Fat per ea: {{ item.fat|round(2) }}</p>
+                {% endif %}
+                <hr class="my-4">
+                {% if item.recipe %}
+                <p>{{ item.recipe }}</p>
+                {% endif %}
+                <div class="row justify-content-center text-center">
+                    <div class="col-4">
+                        <a href="{{ url_for('rate.rate_commit', rating=3, item_id=item.id) }}" class="btn btn-light">😋<br>
+                        Yum</a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ url_for('rate.rate_commit', rating=2, item_id=item.id) }}" class="btn btn-light">😑<br>
+                        Meh</a>
+                    </div>
+                    <div class="col-4">
+                        <a href="{{ url_for('rate.rate_commit', rating=1, item_id=item.id) }}" class="btn btn-light">🤮<br>
+                        Yuck</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% else %}
+<section class="section-diet">
+    <div class="container-fluid text-center">
+        <p>No items available for rating.</p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

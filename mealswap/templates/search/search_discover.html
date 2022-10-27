@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% from 'bootstrap4/form.html' import render_field %}
+
+{% block content %}
+<section class="section-header">
+    <div class="container-fluid">
+        <h1 class="big-heading">Your recommendations</h1>
+        {% with messages = get_flashed_messages() %}
+            <p class="font-weight-bold">{{ messages[-1] }}</p>
+        {% endwith %}
+    </div>
+</section>
+{% if items %}
+<section class="section-jumbo">
+    {% for item in items %}
+        <div class="row justify-content-center p-3">
+            <div class="col-lg-6 col-md-12">
+                <div class="jumbotron">
+                    {% if item.link %}
+                    <h1 class="display-4"><a href="{{ item.link }}" target="_blank">{{ item.name }}</a></h1>
+                    {% else %}
+                    <h1 class="display-4">{{ item.name }}</h1>
+                    {% endif %}
+                    {% if item.has_weight %}
+                    <p class="lead">Calories per 100g: {{ item.calories|round(2) }}</p>
+                    <p class="lead">Protein per 100g: {{ item.protein|round(2) }}</p>
+                    <p class="lead">Carbs per 100g: {{ item.carb|round(2) }}</p>
+                    <p class="lead">Fat per 100g: {{ item.fat|round(2) }}</p>
+                    {% else %}
+                    <p class="lead">Calories per ea: {{ item.calories|round(2) }}</p>
+                    <p class="lead">Protein per ea: {{ item.protein|round(2) }}</p>
+                    <p class="lead">Carbs per ea: {{ item.carb|round(2) }}</p>
+                    <p class="lead">Fat per ea: {{ item.fat|round(2) }}</p>
+                    {% endif %}
+                    <hr class="my-4">
+                    {% if item.recipe %}
+                    <p>{{ item.recipe }}</p>
+                    {% endif %}
+                    <form method="post">
+                        {{ form.csrf_token() }}
+                        {{ render_field(form.date) }}
+                        {% if item.has_weight %}
+                        <div class="py-2">
+                            {{ render_field(form.qty) }}
+                            <input type="submit" class="btn btn-success" name="{{ item.id }}" value="Add">
+                        </div>
+                        {% endif %}
+                        {% if item.servings %}
+                        <div class="py-2">
+                            {{ render_field(form.ea) }}
+                            <input type="submit" class="btn btn-success" name="{{ item.id }}" value="Add">
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</section>
+{% else %}
+<section class="section-diet">
+    <div class="container-fluid text-center">
+        <p>No recommendations available.</p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
