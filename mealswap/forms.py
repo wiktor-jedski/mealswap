@@ -142,7 +142,6 @@ class MacroForm(FlaskForm):
     submitMacroForm = SubmitField('Search')
 
     def validate(self, **kwargs):
-        print(self.fat.data)
         initial_validation = super(MacroForm, self).validate()
         empty_count = 0
         if self.protein.data is None:

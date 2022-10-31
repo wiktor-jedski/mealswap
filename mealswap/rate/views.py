@@ -78,7 +78,8 @@ def rate_commit() -> Response:
     edit = request.args.get('edit')
 
     item = get_element_by_id(Model.ITEM, item_id)
-    item_name = set_rating(item, current_user, rating)
+    assoc = set_rating(item, current_user, rating)
+    item_name = assoc.item.name
 
     if edit:
         flash(message=f"Rating for: '{item_name}' successfully updated!", category="success")

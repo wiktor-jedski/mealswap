@@ -88,7 +88,7 @@ def get_rating_by_ids(item_id, user_id) -> RatingsAssoc:
     return RatingsAssoc.query.filter_by(item_id=item_id, user_id=user_id).first()
 
 
-def set_rating(item, user, rating) -> str:
+def set_rating(item, user, rating) -> db.Model:
     assoc = get_rating_by_ids(item.id, user.id)
     if assoc:
         assoc.rating = int(rating)
@@ -98,7 +98,7 @@ def set_rating(item, user, rating) -> str:
         user.ratings.append(assoc)
     db.session.commit()
 
-    return assoc.item.name
+    return assoc
 
 
 def add_product_to_db(name, protein, carb, fat, user, weight_per_ea=None):
@@ -132,10 +132,10 @@ def add_product_to_db(name, protein, carb, fat, user, weight_per_ea=None):
     db.session.add(item)
     db.session.commit()
 
-    return name
+    return product
 
 
-def add_meal_to_db(name, protein, carb, fat, user, has_weight, link, recipe, saved, qty, servings):
+def add_meal_to_db(name, protein, carb, fat, user, has_weight, link, recipe, saved, qty, servings) -> db.Model:
     """Adds a meal to database.
     To add a weighted meal (i.e. known data for values of macronutrients per 100g), set has_weight = True.
     To add a composite meal, set has_weight = True, qty = 0, saved = False (enables editing).

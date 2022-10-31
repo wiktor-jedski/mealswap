@@ -21,10 +21,10 @@ def add_product() -> str or Response:
     """Renders form for adding products."""
     form = ProductForm()
     if form.validate_on_submit() and form.submitProductForm.data:
-        name = add_product_to_db(form.name.data, form.protein.data, form.carb.data, form.fat.data, current_user,
-                                 weight_per_ea=form.weight_per_ea.data)
+        product = add_product_to_db(form.name.data, form.protein.data, form.carb.data, form.fat.data, current_user,
+                                    weight_per_ea=form.weight_per_ea.data)
 
-        flash(f'Product "{name}" successfully added!', category='success')
+        flash(f'Product "{product.name}" successfully added!', category='success')
         return redirect(url_for('add.add_product'))
     return render_template('add/add_product.html', user=current_user, form=form)
 
