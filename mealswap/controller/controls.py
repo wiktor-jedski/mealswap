@@ -3,6 +3,7 @@ from mealswap.extensions import db
 from enum import Enum
 import datetime as dt
 from werkzeug.security import generate_password_hash
+import calendar
 
 
 # model class
@@ -45,6 +46,13 @@ def get_user_by_email(email) -> User:
 
 def get_diet_by_date(date) -> DayDiet:
     return DayDiet.query.filter_by(date=date).first()
+
+
+def get_diets_in_current_month() -> list:
+    today = dt.date.today()
+    first_day = dt.date(today.year, today.month, 1)
+    last_day = dt.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+    return DayDiet.query.filter(DayDiet.date.between(first_day, last_day)).all()
 
 
 def get_saved_items() -> list:
@@ -128,6 +136,11 @@ def add_product_to_db(name, protein, carb, fat, user, weight_per_ea=None):
 
 
 def add_meal_to_db(name, protein, carb, fat, user, has_weight, link, recipe, saved, qty, servings):
+    """Adds a meal to database.
+    To add a weighted meal (i.e. known data for values of macronutrients per 100g), set has_weight = True.
+    To add a composite meal, set has_weight = True, qty = 0, saved = False (enables editing).
+    To add a meal with macronutrient data per serving, set has_weight = False.
+    """
     item = Item(
         name=name,
         protein=protein,
@@ -145,10 +158,7 @@ def add_meal_to_db(name, protein, carb, fat, user, has_weight, link, recipe, sav
     db.session.add(item)
     db.session.commit()
 
-    if saved:
-        return name
-    else:
-        return item.id
+    return item
 
 
 def set_meal_recipe(item, link, recipe, servings):
@@ -333,6 +343,41 @@ def add_user(email, password, name):
     password = generate_password_hash(password)
     new_user = User(email, password, name, confirmed=False)
     db.session.add(new_user)
+    db.session.commit()
+
+    return None
+
+
+def set_password(user, password):
+    user.set_password(password)
+    db.session.commit()
+
+    return None
+
+
+def delete_account(user):
+    user.delete_account()
+    db.session.commit()
+
+    return None
+
+
+def set_diet_goals(user, calories, protein, carb, fat, percentage):
+    settings = user.settings[0]
+    if percentage:
+        settings.calories_goal = calories
+        settings.protein_goal = calories * protein / 100 / 4
+        settings.carb_goal = calories * carb / 100 / 4
+        settings.fat_goal = calories * fat / 100 / 9
+    else:
+        if calories:
+            settings.calories_goal = calories
+        if protein:
+            settings.protein_goal = protein
+        if carb:
+            settings.carb_goal = carb
+        if fat:
+            settings.fat_goal = fat
     db.session.commit()
 
     return None

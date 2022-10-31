@@ -2,10 +2,12 @@ from flask import render_template, flash, redirect, url_for, Response, Blueprint
 from flask_login import login_user, login_required, logout_user, current_user
 from mealswap.extensions import login_manager, db
 from mealswap.email import send_confirmation_msg
-from .forms import RegisterForm, LoginForm
+from mealswap.forms import RegisterForm, LoginForm, ChangePasswordForm, DeleteAccountForm, DietGoalPercentageForm, \
+    DietGoalMacroForm
 from .token import confirm_token, SignatureExpired, BadSignature
 import datetime as dt
-from ..controller.controls import add_user, get_user_by_email, get_element_by_id, Model
+from ..controller.controls import add_user, get_user_by_email, get_element_by_id, Model, set_password, delete_account, \
+    set_diet_goals
 
 blueprint = Blueprint('user', __name__, static_folder='../static')
 
@@ -55,7 +57,7 @@ def logout() -> Response:
 
 @blueprint.route('/confirm/<token>')
 def confirm_email(token) -> str or Response:
-    """Renders """
+    """Renders email confirmation page"""
     try:
         email = confirm_token(token)
     except SignatureExpired or BadSignature:
@@ -75,8 +77,42 @@ def confirm_email(token) -> str or Response:
     return render_template('user/confirm.html', email=None, user=current_user)
 
 
-@blueprint.route('/settings')
+@blueprint.route('/settings', methods=['GET', 'POST'])
 @login_required
-def settings() -> str:
+def settings() -> str or Response:
     """Renders settings page"""
-    return render_template('user/settings.html', user=current_user)
+
+    change_password_form = ChangePasswordForm(current_user)
+    if change_password_form.validate_on_submit():
+        set_password(current_user, change_password_form.new_password.data)
+        flash("Password changed.")
+        return redirect(url_for('user.settings'))
+
+    delete_form = DeleteAccountForm(current_user)
+    if delete_form.validate_on_submit():
+        delete_account(current_user)
+        return redirect(url_for('user.logout'))
+
+    diet_goal_percentage_form = DietGoalPercentageForm()
+    if diet_goal_percentage_form.validate_on_submit():
+        calories = diet_goal_percentage_form.calories.data
+        protein_percent = diet_goal_percentage_form.protein.data
+        carb_percent = diet_goal_percentage_form.carb.data
+        fat_percent = diet_goal_percentage_form.fat.data
+        set_diet_goals(current_user, calories, protein_percent, carb_percent, fat_percent, percentage=True)
+        flash("Diet goals updated successfully.")
+        return redirect(url_for('user.settings'))
+
+    diet_goal_macro_form = DietGoalMacroForm()
+    if diet_goal_macro_form.validate_on_submit():
+        calories = diet_goal_macro_form.calories.data
+        protein = diet_goal_macro_form.protein.data
+        carb = diet_goal_macro_form.carb.data
+        fat = diet_goal_macro_form.fat.data
+        set_diet_goals(current_user, calories, protein, carb, fat, percentage=False)
+        flash("Diet goals updated successfully.")
+        return redirect(url_for('user.settings'))
+
+    return render_template('user/settings.html', user=current_user, change_password_form=change_password_form,
+                           delete_form=delete_form, diet_goal_percentage_form=diet_goal_percentage_form,
+                           diet_goal_macro_form=diet_goal_macro_form)

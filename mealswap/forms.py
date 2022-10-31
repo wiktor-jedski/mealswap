@@ -170,7 +170,8 @@ class EditForm(FlaskForm):
 
 
 class EaEditForm(FlaskForm):
-    qty = IntegerField('New qty (ea):', validators=[DataRequired(), NumberRange(min=1, message='Qty cannot be negative')])
+    qty = IntegerField('New qty (ea):',
+                       validators=[DataRequired(), NumberRange(min=1, message='Qty cannot be negative')])
     submitEditForm = SubmitField('Edit')
 
 
@@ -250,7 +251,7 @@ class LoginForm(FlaskForm):
             return False
 
         if not self.user.confirmed:
-            self.email.errors.append("User not activated")
+            self.email.errors.append("User not activated or account terminated")
             return False
 
         return True
@@ -263,3 +264,115 @@ class DateForm(FlaskForm):
     def __init__(self, *args, **kwargs):
         super(DateForm, self).__init__(*args, **kwargs)
 
+
+class ChangePasswordForm(FlaskForm):
+    password = PasswordField('Current password', validators=[DataRequired()])
+    new_password = PasswordField('New password', validators=[DataRequired(), Length(min=8)])
+    confirmation = PasswordField('Confirm password', validators=[
+        DataRequired(), EqualTo('new_password', message='Passwords must match')])
+    submit = SubmitField('Confirm')
+
+    def __init__(self, user, *args, **kwargs):
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+        self.user = user
+
+    def validate(self, **kwargs):
+        initial_validation = super(ChangePasswordForm, self).validate()
+        if not initial_validation:
+            return False
+
+        if not self.user.check_password(self.password.data):
+            self.password.errors.append("Wrong password")
+            return False
+
+        return True
+
+
+class DeleteAccountForm(FlaskForm):
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirmation = PasswordField('Confirm password', validators=[
+        DataRequired(), EqualTo('password', message='Passwords must match')])
+    submitDeleteAccountForm = SubmitField('Delete')
+
+    def __init__(self, user, *args, **kwargs):
+        super(DeleteAccountForm, self).__init__(*args, **kwargs)
+        self.user = user
+
+    def validate(self, **kwargs):
+        initial_validation = super(DeleteAccountForm, self).validate()
+        if not initial_validation:
+            return False
+
+        if not self.user.check_password(self.password.data):
+            self.password.errors.append("Wrong password")
+            return False
+
+        return True
+
+
+class DietGoalPercentageForm(FlaskForm):
+    calories = FloatField('Calories (kcal)', validators=[DataRequired(),
+                                                         NumberRange(min=1, message="Number has to be positive")])
+    protein = IntegerField('Protein (%)',
+                           validators=[DataRequired(),
+                                       NumberRange(min=0, max=100, message="Value has to be between 0 and 100")])
+    carb = IntegerField('Carbohydrate (%)',
+                        validators=[DataRequired(),
+                                    NumberRange(min=0, max=100, message="Value has to be between 0 and 100")])
+    fat = IntegerField('Fat (%)',
+                       validators=[DataRequired(),
+                                   NumberRange(min=0, max=100, message="Value has to be between 0 and 100")])
+    submitDietGoalPercentageForm = SubmitField('Submit')
+
+    def validate(self, **kwargs):
+        initial_validation = super(DietGoalPercentageForm, self).validate()
+        if not initial_validation:
+            return False
+
+        if self.protein.data + self.carb.data + self.fat.data != 100:
+            self.protein.errors.append("Sum of percentages has to be 100")
+            self.carb.errors.append("Sum of percentages has to be 100")
+            self.fat.errors.append("Sum of percentages has to be 100")
+            return False
+
+        return True
+
+
+class DietGoalMacroForm(FlaskForm):
+    calories = FloatField('Calories (kcal)',
+                          validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    protein = FloatField('Protein (g)',
+                         validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    carb = FloatField('Carbohydrate (g)',
+                      validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    fat = FloatField('Fat (g)',
+                     validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    submitDietGoalMacroForm = SubmitField('Submit')
+
+    def validate(self, **kwargs):
+        initial_validation = super(DietGoalMacroForm, self).validate()
+        if not initial_validation:
+            return False
+
+        if self.protein.data is None:
+            protein_check = 0
+        else:
+            protein_check = self.protein.data
+        if self.carb.data is None:
+            carb_check = 0
+        else:
+            carb_check = self.carb.data
+        if self.fat.data is None:
+            fat_check = 0
+        else:
+            fat_check = self.fat.data
+        if self.calories.data is None:
+            calories_check = 0
+        else:
+            calories_check = self.calories.data
+        if protein_check*4 + carb_check*4 + fat_check*9 > calories_check:
+            self.calories.errors.append("Calories from macronutrients are bigger than goal calories. "
+                                        "Please change one of them")
+            return False
+
+        return True

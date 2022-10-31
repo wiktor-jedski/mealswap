@@ -5,9 +5,23 @@
 <section class="section-header">
     <div class="container-fluid">
         <h1 class="big-heading">Diet for: {{ date }}</h1>
-        <p>Total: {{ total['calories']|round(2) }} kcal, {{ total['protein']|round(2) }} g protein,
-            {{ total['carbs']|round(2) }} g carbs, {{ total['fat']|round(2) }} g fat</p>
-        <p>Goal: Not yet implemented :(</p>
+        <p>Total: {{ total['calories']|round(2) }} kcal {{ total['protein']|round(2) }} g protein
+            {{ total['carbs']|round(2) }} g carb {{ total['fat']|round(2) }} g fat</p>
+        <p>
+            Goal:
+            {% if user.settings[0].calories_goal %}
+            {{ user.settings[0].calories_goal|round(2) }} kcal
+            {% endif %}
+            {% if user.settings[0].protein_goal %}
+            {{ user.settings[0].protein_goal|round(2) }} g protein
+            {% endif %}
+            {% if user.settings[0].carb_goal %}
+            {{ user.settings[0].carb_goal|round(2) }} g carb
+            {% endif %}
+            {% if user.settings[0].fat_goal %}
+            {{ user.settings[0].fat_goal|round(2) }} g fat
+            {% endif %}
+        </p>
     </div>
 </section>
 
@@ -247,7 +261,9 @@
                 {% endif %}
                 {% endfor %}
                 {% else %}
-                No items yet. Maybe you want to add something?
+                <div class="text-center">
+                    No items yet. Maybe you want to add something?
+                </div>
                 {% endif %}
             </div>
         </div>

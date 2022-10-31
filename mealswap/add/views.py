@@ -1,11 +1,11 @@
 from flask import Blueprint, Response, redirect, url_for, render_template, flash, abort, request
 from flask_login import current_user, login_required
 from mealswap.controller.controls import add_product_to_db, get_element_by_id, Model, add_meal_to_db, set_meal_recipe, \
-    set_qty_in_meal, clear_meal, save_meal, get_products_by_name, add_product_to_meal, get_saved_items_by_name, \
-    copy_meal, delete_index_from_meal, get_saved_composed_items_by_name
+    set_qty_in_meal, clear_meal, save_meal, get_products_by_name, add_product_to_meal, copy_meal, \
+    delete_index_from_meal, get_saved_composed_items_by_name
 from mealswap.extensions import login_manager
-from mealswap.forms import ProductForm, WeightMealForm, CompositeMealForm, LinkRecipeServingsForm, CopyMealForm, SearchForm, \
-    EditForm, DeleteForm, SaveForm, QtyForm, ServingMealForm, QtyEaForm
+from mealswap.forms import ProductForm, WeightMealForm, CompositeMealForm, LinkRecipeServingsForm, CopyMealForm, \
+    SearchForm, EditForm, DeleteForm, SaveForm, ServingMealForm, QtyEaForm
 
 blueprint = Blueprint('add', __name__, static_folder='../static')
 
@@ -41,31 +41,31 @@ def add_meal() -> str or Response:
             servings = 1
         else:
             servings = 0
-        name = add_meal_to_db(weight_meal_form.name.data, weight_meal_form.protein.data, weight_meal_form.carb.data,
+        item = add_meal_to_db(weight_meal_form.name.data, weight_meal_form.protein.data, weight_meal_form.carb.data,
                               weight_meal_form.fat.data, current_user, has_weight, weight_meal_form.link.data,
                               weight_meal_form.recipe.data, saved=True, qty=qty, servings=servings)
 
-        flash(f'Meal "{name}" successfully added!', category='success')
+        flash(f'Meal "{item.name}" successfully added!', category='success')
         return redirect(url_for('add.add_meal'))
 
     serving_meal_form = ServingMealForm()
     if serving_meal_form.validate_on_submit() and serving_meal_form.submitServingMealForm.data:
         has_weight = False
-        name = add_meal_to_db(serving_meal_form.name.data, serving_meal_form.protein.data, serving_meal_form.carb.data,
+        item = add_meal_to_db(serving_meal_form.name.data, serving_meal_form.protein.data, serving_meal_form.carb.data,
                               serving_meal_form.fat.data, current_user, has_weight, serving_meal_form.link.data,
                               serving_meal_form.recipe.data, saved=True, qty=1, servings=1)
 
-        flash(f'Meal "{name}" successfully added!', category='success')
+        flash(f'Meal "{item.name}" successfully added!', category='success')
         return redirect(url_for('add.add_meal'))
 
     composite_meal_form = CompositeMealForm()
     if composite_meal_form.validate_on_submit() and composite_meal_form.submitCompositeMealForm.data:
         has_weight = True
-        item_id = add_meal_to_db(composite_meal_form.name.data, 0, 0, 0, current_user, has_weight,
-                                 composite_meal_form.link.data, composite_meal_form.recipe.data, saved=False, qty=0,
-                                 servings=1)
+        item = add_meal_to_db(composite_meal_form.name.data, 0, 0, 0, current_user, has_weight,
+                              composite_meal_form.link.data, composite_meal_form.recipe.data, saved=False,
+                              qty=0, servings=1)
 
-        return redirect(url_for('add.compose_meal', item_id=item_id))
+        return redirect(url_for('add.compose_meal', item_id=item.id))
 
     return render_template('add/add_meal.html', user=current_user, weight_meal_form=weight_meal_form,
                            serving_meal_form=serving_meal_form, composite_meal_form=composite_meal_form)

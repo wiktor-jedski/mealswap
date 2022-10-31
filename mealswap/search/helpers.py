@@ -50,10 +50,11 @@ def get_similar_items(items, protein, carb, fat, calories, item_id):
             denominator = sqrt(den1) * sqrt(den2)
         try:
             distance = acos(numerator / denominator)
-        except ZeroDivisionError:
+        except ZeroDivisionError and ValueError:
             continue
-        similarity = 1 - distance * 2 / pi
-        similarity_list.append((similarity, i))
+        else:
+            similarity = 1 - distance * 2 / pi
+            similarity_list.append((similarity, i))
     similarity_list.sort(key=lambda x: x[0], reverse=True)
     return similarity_list
 

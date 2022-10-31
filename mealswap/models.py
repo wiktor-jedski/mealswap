@@ -29,6 +29,7 @@ class User(UserMixin, db.Model):
         self.registered_on = dt.datetime.now()
         self.confirmed = confirmed
         self.confirmed_on = confirmed_on
+        self.settings.append(Settings())
 
     def set_password(self, value):
         """Set password"""
@@ -37,6 +38,10 @@ class User(UserMixin, db.Model):
     def check_password(self, value):
         """Checks password hash"""
         return check_password_hash(self.password, value)
+
+    def delete_account(self):
+        """Terminates account"""
+        self.confirmed = False
 
     def __repr__(self):
         """User class representation as a string"""

@@ -8,8 +8,9 @@ from mealswap.settings import MAIL_DEFAULT_SENDER
 def send_confirmation_msg(email: str, name: str) -> None:
     """
     Sends email with confirmation token to unlock the account.
-    :param email: user's email
-    :param name: user's name
+
+    :param str email: user's email
+    :param str name: user's name
     :return: None
     """
     token = generate_confirmation_token(email)

@@ -36,6 +36,9 @@ def import_meals(file: str, email: str):
     """
     Imports meals from a .csv file.
     Function uses following columns: name, protein, carbohydrates, fat, link
+
+    :param file: filename of the .csv file
+    :param email: Email address of the user adding the data.
     """
     with open(file, 'r', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -49,9 +52,11 @@ def import_meals(file: str, email: str):
                         carb=float(row['carbohydrates']),
                         fat=float(row['fat']),
                         user=user,
-                        qty=100,
+                        has_weight=False,
                         link=row['link'],
-                        saved=True)
+                        saved=True,
+                        qty=1,
+                        servings=1)
             db.session.add(item)
         db.session.commit()
         return None
@@ -64,6 +69,9 @@ def import_products(file: str, email: str):
     """
     Imports products from a .csv file.
     Function uses following columns: name, protein, carbohydrates, fat
+
+    :param file: filename of the .csv file
+    :param email: Email address of the user adding the data.
     """
     with open(file, 'r', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -83,8 +91,10 @@ def import_products(file: str, email: str):
                 protein=float(row['protein']),
                 carb=float(row['carbohydrates']),
                 fat=float(row['fat']),
+                has_weight=True,
                 user=user,
-                qty=100,
+                qty=0,
+                servings=0,
                 saved=True
             )
             db.session.add(product)

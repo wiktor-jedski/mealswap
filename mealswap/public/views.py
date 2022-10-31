@@ -1,6 +1,4 @@
-from pathlib import Path
-
-from flask import render_template, Blueprint, redirect, url_for, Response, request
+from flask import render_template, Blueprint, redirect, url_for, Response
 from flask_login import current_user
 from mealswap.controller.controls import get_element_by_id, Model
 from mealswap.extensions import login_manager

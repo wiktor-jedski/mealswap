@@ -1,9 +1,10 @@
 from flask import Blueprint, redirect, url_for, request, render_template, Response, flash
 from flask_login import login_required, current_user
+from mealswap.diet.helpers import get_calendar
 from mealswap.extensions import login_manager
-from mealswap.controller.controls import Model, get_element_by_id, get_saved_items, get_diet_by_date, add_diet, \
+from mealswap.controller.controls import Model, get_element_by_id, get_diet_by_date, add_diet, \
     delete_diet, edit_item_qty_in_diet, delete_item_in_diet, add_item_to_diet, get_saved_items_by_name
-from mealswap.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyForm, QtyEaForm, EaEditForm
+from mealswap.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyEaForm, EaEditForm
 
 blueprint = Blueprint('diet', __name__, static_folder='../static')
 
@@ -21,7 +22,10 @@ def calendar():
     if date_form.validate_on_submit():
         date = date_form.date.data
         return redirect(url_for('diet.day', date=date))
-    return render_template('diet/calendar.html', user=current_user, form=date_form)
+
+    title, table_rows = get_calendar()
+
+    return render_template('diet/calendar.html', user=current_user, form=date_form, title=title, table_rows=table_rows)
 
 
 @blueprint.route('/day/<date>', methods=['GET', 'POST'])
