@@ -1,6 +1,6 @@
 from flask import Flask
-
 from mealswap import add, edit, public, rate, search, user, commands, diet
+from mealswap.controller.controls import get_element_by_id, Model
 from mealswap.extensions import (
     login_manager,
     db,
@@ -9,9 +9,11 @@ from mealswap.extensions import (
 )
 
 
-def create_app(config='mealswap.settings'):
+def create_app(config='mealswap.settings') -> Flask:
     """Create app factory.
-    @:param config: config object to be used.
+
+    :param config: config object to be used.
+    :return: Flask app
     """
     app = Flask(__name__.split(".")[0])
     app.config.from_object(config)
@@ -48,3 +50,13 @@ def register_commands(app):
     app.cli.add_command(commands.add_admin)
     app.cli.add_command(commands.import_meals)
     return None
+
+
+@login_manager.user_loader
+def load_user(user_id: str) -> db.Model or None:
+    """Loads current user.
+
+    :param user_id: id of the user that is logged in
+    :return: User object or None (if not logged in)
+    """
+    return get_element_by_id(Model.USER, user_id)

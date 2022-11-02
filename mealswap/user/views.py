@@ -12,14 +12,13 @@ from ..controller.controls import add_user, get_user_by_email, get_element_by_id
 blueprint = Blueprint('user', __name__, static_folder='../static')
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return get_element_by_id(Model.USER, user_id)
-
-
 @blueprint.route('/register', methods=['GET', 'POST'])
 def register() -> str or Response:
-    """Renders the register page"""
+    """Renders the register page
+
+    :return: rendered register template OR
+        rendered confirm template if register form validated
+    """
     form = RegisterForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -36,7 +35,11 @@ def register() -> str or Response:
 
 @blueprint.route("/login", methods=['GET', 'POST'])
 def login() -> str or Response:
-    """Renders the login page"""
+    """Renders the login page
+
+    :return: rendered login page OR
+        redirect to home page if form validated
+    """
     form = LoginForm()
     if form.validate_on_submit():
         email = form.email.data
@@ -50,14 +53,21 @@ def login() -> str or Response:
 @blueprint.route('/logout')
 @login_required
 def logout() -> Response:
-    """Logouts user, redirects to homepage"""
+    """Logouts user, redirects to homepage
+
+    :return: redirect to home page
+    """
     logout_user()
     return redirect(url_for('public.home'))
 
 
 @blueprint.route('/confirm/<token>')
-def confirm_email(token) -> str or Response:
-    """Renders email confirmation page"""
+def confirm_email(token: str) -> str or Response:
+    """Renders email confirmation page
+
+    :param token: token generated in the confirmation message during register
+    :return: rendered confirm template
+    """
     try:
         email = confirm_token(token)
     except SignatureExpired or BadSignature:
@@ -80,7 +90,12 @@ def confirm_email(token) -> str or Response:
 @blueprint.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings() -> str or Response:
-    """Renders settings page"""
+    """Renders settings page
+
+    :return: rendered settings template OR
+        redirect to settings if changed password, updated diet goals OR
+        redirect to home page if user deleted account
+    """
 
     change_password_form = ChangePasswordForm(current_user)
     if change_password_form.validate_on_submit():
@@ -90,8 +105,9 @@ def settings() -> str or Response:
 
     delete_form = DeleteAccountForm(current_user)
     if delete_form.validate_on_submit():
+        logout_user()
         delete_account(current_user)
-        return redirect(url_for('user.logout'))
+        return redirect(url_for('public.home'))
 
     diet_goal_percentage_form = DietGoalPercentageForm()
     if diet_goal_percentage_form.validate_on_submit():

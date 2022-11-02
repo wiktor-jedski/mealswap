@@ -6,16 +6,17 @@ from mealswap.controller.controls import get_user_by_email
 
 
 class ProductForm(FlaskForm):
+    """A class used to create forms for product data"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
     protein = FloatField('Proteins per 100g',
-                         validators=[NumberRange(min=0, message='Please enter the value not less than 0')])
+                         validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
     carb = FloatField('Carbs per 100g',
-                      validators=[NumberRange(min=0, message='Please enter the value not less than 0')])
+                      validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
     fat = FloatField('Fats per 100g',
-                     validators=[NumberRange(min=0, message='Please enter the value not less than 0')])
+                     validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
     weight_per_ea = FloatField('Weight per ea (optional)',
-                               validators=[NumberRange(min=0, message='Please enter the value not less than 0'),
-                                           Optional()])
+                               validators=[NumberRange(min=0,
+                                                       message='Please enter the value bigger than 0'), Optional()])
     submitProductForm = SubmitField('Add product')
 
     def validate(self, **kwargs):
@@ -32,6 +33,7 @@ class ProductForm(FlaskForm):
 
 
 class WeightMealForm(FlaskForm):
+    """A class used to create forms for meals with known macronutrient values per 100g"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
     protein = FloatField('Proteins per 100g',
                          validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
@@ -59,6 +61,7 @@ class WeightMealForm(FlaskForm):
 
 
 class ServingMealForm(FlaskForm):
+    """A class used to create forms for meals with known macronutrient values per serving"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
     protein = FloatField('Proteins per serving',
                          validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
@@ -81,6 +84,7 @@ class ServingMealForm(FlaskForm):
 
 
 class CompositeMealForm(FlaskForm):
+    """A class used to create a composite meal (meal built out of products) via user input"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
     link = StringField('Link to the recipe (optional)', validators=[URL(), Optional()])
     recipe = TextAreaField('Recipe (optional)')
@@ -88,16 +92,13 @@ class CompositeMealForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
+    """A class used to create forms searching the database"""
     search = StringField('Search for:', validators=[DataRequired()])
     submitSearchForm = SubmitField('Search')
 
 
-class QtyForm(FlaskForm):
-    qty = FloatField('Qty (g):', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
-    submitQtyForm = SubmitField('Add')
-
-
 class QtyEaForm(FlaskForm):
+    """A class used to create quantity/ea forms to add new items into diet or products into meals"""
     qty = FloatField('Qty (g):', validators=[NumberRange(min=0, message='Qty cannot be negative')])
     ea = IntegerField('Qty (ea)', validators=[NumberRange(min=0, message='Qty cannot be negative')])
     submitQtyEaForm = SubmitField('Add')
@@ -117,6 +118,7 @@ class QtyEaForm(FlaskForm):
 
 
 class DateQtyEaForm(FlaskForm):
+    """A class used to create form for adding a meal replacement to a chosen day"""
     date = DateField('Enter date:', validators=[DataRequired()])
     qty = FloatField('Qty (g):', validators=[NumberRange(min=0, message='Qty cannot be negative')])
     ea = IntegerField('Qty (ea):', validators=[NumberRange(min=1, message='Qty cannot be negative')])
@@ -124,10 +126,12 @@ class DateQtyEaForm(FlaskForm):
 
 
 class DiscoverForm(FlaskForm):
+    """A class used to create form for starting random meal rating"""
     submitDiscoverForm = SubmitField('Discover')
 
 
 class MacroForm(FlaskForm):
+    """A class used to create form for searching meal replacement"""
     protein = DecimalField('Proteins per 100g',
                            validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100'),
                                        Optional()])
@@ -164,32 +168,40 @@ class MacroForm(FlaskForm):
 
 
 class EditForm(FlaskForm):
+    """A class used to create quantity forms for editing"""
     qty = FloatField('New qty (g):', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
     submitEditForm = SubmitField('Edit')
 
 
 class EaEditForm(FlaskForm):
+    """A class used to create ea forms for editing (for meals that do not have weight)"""
     qty = IntegerField('New qty (ea):',
                        validators=[DataRequired(), NumberRange(min=1, message='Qty cannot be negative')])
     submitEditForm = SubmitField('Edit')
 
 
 class DeleteForm(FlaskForm):
+    """Simple delete form"""
     submitDeleteForm = SubmitField('Delete')
 
 
 class SaveForm(FlaskForm):
+    """Simple save form"""
     submitSaveForm = SubmitField('Save')
 
 
 class CopyMealForm(FlaskForm):
+    """A class used to create search form for copying meals.
+    A separate class has been created to remove bug regarding the same name of submit field.
+    """
     search = StringField('Search for:', validators=[DataRequired()])
     submitCopyMealForm = SubmitField('Search')
 
 
 class LinkRecipeServingsForm(FlaskForm):
+    """A class used to create form for additional meal information"""
     link = StringField('Link to the recipe (optional)', validators=[URL(), Optional()])
-    recipe = TextAreaField('Recipe (optional)', validators=[Optional()])
+    recipe = TextAreaField('Recipe (optional)')
     servings = IntegerField('Number of servings (default: 1)',
                             validators=[NumberRange(min=1, message='Number of servings cannot be smaller than 1'),
                                         Optional()])
@@ -197,12 +209,14 @@ class LinkRecipeServingsForm(FlaskForm):
 
 
 class RatingForm(FlaskForm):
+    """Simple form for ratings"""
     submitYumRatingForm = SubmitField('😋\nYum')
     submitMehRatingForm = SubmitField('😑\nMeh')
     submitYuckRatingForm = SubmitField('🤮\nYuck')
 
 
 class RegisterForm(FlaskForm):
+    """A class used to create registration form"""
     email = StringField('Email', validators=[DataRequired(), Email()])
     name = StringField('Name', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
@@ -226,6 +240,7 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
+    """A class used to create login form"""
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
@@ -257,14 +272,13 @@ class LoginForm(FlaskForm):
 
 
 class DateForm(FlaskForm):
+    """A class used to create a date lookup form"""
     date = DateField('Enter date:', validators=[DataRequired()])
     submit = SubmitField('Find')
 
-    def __init__(self, *args, **kwargs):
-        super(DateForm, self).__init__(*args, **kwargs)
-
 
 class ChangePasswordForm(FlaskForm):
+    """A class used to create a form for password change"""
     password = PasswordField('Current password', validators=[DataRequired()])
     new_password = PasswordField('New password', validators=[DataRequired(), Length(min=8)])
     confirmation = PasswordField('Confirm password', validators=[
@@ -288,6 +302,7 @@ class ChangePasswordForm(FlaskForm):
 
 
 class DeleteAccountForm(FlaskForm):
+    """A class used to create a form for account termination"""
     password = PasswordField('Password', validators=[DataRequired()])
     confirmation = PasswordField('Confirm password', validators=[
         DataRequired(), EqualTo('password', message='Passwords must match')])
@@ -310,6 +325,7 @@ class DeleteAccountForm(FlaskForm):
 
 
 class DietGoalPercentageForm(FlaskForm):
+    """A class used to create a form for setting diet goals based on percentages"""
     calories = FloatField('Calories (kcal)', validators=[DataRequired(),
                                                          NumberRange(min=1, message="Number has to be positive")])
     protein = IntegerField('Protein (%)',
@@ -338,6 +354,7 @@ class DietGoalPercentageForm(FlaskForm):
 
 
 class DietGoalMacroForm(FlaskForm):
+    """A class used to create a form for setting diet goals based on concrete numbers"""
     calories = FloatField('Calories (kcal)',
                           validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
     protein = FloatField('Protein (g)',

@@ -3,22 +3,19 @@ from flask_login import current_user, login_required
 from mealswap.controller.controls import add_product_to_db, get_element_by_id, Model, add_meal_to_db, set_meal_recipe, \
     set_qty_in_meal, clear_meal, save_meal, get_products_by_name, add_product_to_meal, copy_meal, \
     delete_index_from_meal, get_saved_composed_items_by_name
-from mealswap.extensions import login_manager
 from mealswap.forms import ProductForm, WeightMealForm, CompositeMealForm, LinkRecipeServingsForm, CopyMealForm, \
     SearchForm, EditForm, DeleteForm, SaveForm, ServingMealForm, QtyEaForm
 
 blueprint = Blueprint('add', __name__, static_folder='../static')
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return get_element_by_id(Model.USER, user_id)
-
-
 @blueprint.route("/add_product", methods=['GET', 'POST'])
 @login_required
 def add_product() -> str or Response:
-    """Renders form for adding products."""
+    """Renders form for adding products.
+
+    :return: rendered 'add_product' template or redirect to add_product after adding product
+    """
     form = ProductForm()
     if form.validate_on_submit() and form.submitProductForm.data:
         product = add_product_to_db(form.name.data, form.protein.data, form.carb.data, form.fat.data, current_user,
@@ -32,7 +29,12 @@ def add_product() -> str or Response:
 @blueprint.route("/add_meal", methods=['GET', 'POST'])
 @login_required
 def add_meal() -> str or Response:
-    """Renders form for adding meals."""
+    """Renders form for adding meals.
+
+    :return: rendered add_meal template OR
+        redirect to add_meal if added empty meal OR
+        redirect to compose_meal if added composed meal
+    """
     weight_meal_form = WeightMealForm()
     if weight_meal_form.validate_on_submit() and weight_meal_form.submitWeightMealForm.data:
         has_weight = True
@@ -73,12 +75,21 @@ def add_meal() -> str or Response:
 
 @blueprint.route("/compose_meal/<item_id>", methods=['GET', 'POST'])
 @login_required
-def compose_meal(item_id) -> str or Response:
-    """Renders form for composing meals."""
+def compose_meal(item_id: str) -> str or Response:
+    """Renders form for composing meals.
+
+    :param item_id: id of the composed meal
+    :return: rendered compose_meal template OR
+        error 403 if user should not access the meal OR
+        redirect to compose_meal if added additional data/edited qty/deleted all items OR
+        redirect to compose_copy if searched for a meal to copy OR
+        redirect to compose_search if searched for a product to add OR
+        redirect to add_meal if the current meal has been saved
+    """
     item = get_element_by_id(Model.ITEM, item_id)
     # prevent user from accessing a saved meal or another user's meal
     if item.saved or item.user != current_user:
-        return abort(code=412)
+        return abort(code=403)
 
     # update link and/or recipe
     link_recipe_form = LinkRecipeServingsForm()
@@ -133,8 +144,14 @@ def compose_meal(item_id) -> str or Response:
 
 @blueprint.route("/compose_meal/<item_id>/<searched>", methods=['GET', 'POST'])
 @login_required
-def compose_search(item_id, searched) -> str or Response:
-    """Renders search result for adding products to composed meals."""
+def compose_search(item_id: str, searched: str) -> str or Response:
+    """Renders search result for adding products to composed meals.
+
+    :param item_id: id of the composed meal
+    :param searched: name or part of the name of the product for search query
+    :return: rendered compose_search template OR
+        redirect to compose_meal if the product has been added
+    """
     products = get_products_by_name(searched)
     form = QtyEaForm()
     if request.method == 'POST':
@@ -169,8 +186,14 @@ def compose_search(item_id, searched) -> str or Response:
 
 @blueprint.route("/compose_meal/<item_id>/copy/<searched>", methods=['GET', 'POST'])
 @login_required
-def compose_copy(item_id, searched) -> str or Response:
-    """Renders search results for copying existing meals."""
+def compose_copy(item_id: str, searched: str) -> str or Response:
+    """Renders search results for copying existing meals.
+
+    :param item_id: id of the composed meal
+    :param searched: name or part of the name of the copied meal for search query
+    :return: rendered compose_copy template OR
+        redirect to compose_meal if a meal has been chosen to copy
+    """
     items = get_saved_composed_items_by_name(searched)
     if request.method == 'POST':
         request_list = list(request.form)
@@ -188,7 +211,10 @@ def compose_copy(item_id, searched) -> str or Response:
 @blueprint.route('/compose_meal/delete_pos')
 @login_required
 def delete_product_in_meal() -> Response:
-    """Deletes the position from the meal"""
+    """Deletes the position from the meal.
+
+    :return: redirect to compose_meal after deleting the product
+    """
     assoc_id = request.args.get('assoc_id')
     item_id = request.args.get('item_id')
 

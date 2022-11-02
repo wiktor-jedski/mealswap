@@ -7,20 +7,30 @@ import csv
 
 
 @click.command(name='create')
-def create():
-    """Creates all database tables."""
+def create() -> None:
+    """Creates all database tables.
+
+    :return: None
+    """
     db.create_all()
     return None
 
 
 @click.command(name='add_admin')
+@click.option('--name', prompt='Name')
 @click.option('--email', prompt='Email')
 @click.option('--password', prompt='Password')
-def add_admin(email: str, password: str):
-    """Adds an admin user"""
+def add_admin(name: str, email: str, password: str) -> None:
+    """Adds an admin user
+
+    :param name: admin name
+    :param email: admin email address
+    :param password: admin password
+    :return: None
+    """
     admin = User(email=email,
                  password=generate_password_hash(password),
-                 name='admin',
+                 name=name,
                  confirmed=True,
                  admin=True,
                  confirmed_on=dt.datetime.now())
@@ -32,13 +42,14 @@ def add_admin(email: str, password: str):
 @click.command(name='import_meals')
 @click.option('--file', prompt='File directory')
 @click.option('--email', prompt='Added by user (email)')
-def import_meals(file: str, email: str):
+def import_meals(file: str, email: str) -> None or int:
     """
     Imports meals from a .csv file.
     Function uses following columns: name, protein, carbohydrates, fat, link
 
     :param file: filename of the .csv file
     :param email: Email address of the user adding the data.
+    :return: -1 if user has not been found, None otherwise
     """
     with open(file, 'r', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -65,13 +76,14 @@ def import_meals(file: str, email: str):
 @click.command(name='import_products')
 @click.option('--file', prompt='File directory')
 @click.option('--email', prompt='Added by user (email)')
-def import_products(file: str, email: str):
+def import_products(file: str, email: str) -> None or int:
     """
     Imports products from a .csv file.
     Function uses following columns: name, protein, carbohydrates, fat
 
     :param file: filename of the .csv file
     :param email: Email address of the user adding the data.
+    :return: -1 if user has not been found, None otherwise
     """
     with open(file, 'r', newline='') as csvfile:
         reader = csv.DictReader(csvfile)
@@ -84,7 +96,8 @@ def import_products(file: str, email: str):
                 name=row['name'],
                 protein=float(row['protein']),
                 carb=float(row['carbohydrates']),
-                fat=float(row['fat'])
+                fat=float(row['fat']),
+                weight_per_ea=0
             )
             item = Item(
                 name=row['name'],

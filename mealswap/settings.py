@@ -1,7 +1,7 @@
 """App config"""
 from dotenv import dotenv_values
 
-env_config = dotenv_values("/home/wiktor/web/mealswap/mealswap/.env")
+env_config = dotenv_values("mealswap/.env")
 MAIL_DEFAULT_SENDER = env_config['MAIL_DEFAULT_SENDER']
 MAIL_USERNAME = env_config['MAIL_USERNAME']
 MAIL_PASSWORD = env_config['MAIL_PASSWORD']

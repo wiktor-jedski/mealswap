@@ -1,7 +1,6 @@
 import sqlalchemy.exc
 from flask import Blueprint, render_template, Response, redirect, url_for, request, flash, session
 from flask_login import current_user, login_required
-from mealswap.extensions import login_manager
 from mealswap.forms import SearchForm, MacroForm, DiscoverForm, DateQtyEaForm
 from mealswap.controller.controls import get_element_by_id, Model, get_saved_items_by_name, get_saved_items, \
     get_diet_by_date, add_diet, add_item_to_diet, get_element_list_by_ids
@@ -10,15 +9,16 @@ from .helpers import get_float, get_similar_items, get_predictions
 blueprint = Blueprint('search', __name__, static_folder='../static')
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return get_element_by_id(Model.USER, user_id)
-
-
 @blueprint.route("/search", methods=['GET', 'POST'])
 @login_required
 def search() -> str or Response:
-    """Renders meal replacement search."""
+    """Renders meal replacement search.
+
+    :return: rendered search template OR
+        redirect to search_replace if search by name form validated OR
+        redirect to search_macro if search by macro form validated OR
+        redirect to search_discover if clicked on discover form
+    """
     name_form = SearchForm()
     if name_form.validate_on_submit() and name_form.submitSearchForm.data:
         search_str = name_form.search.data
@@ -43,7 +43,12 @@ def search() -> str or Response:
 @blueprint.route("/search/str/<searched>", methods=['GET', 'POST'])
 @login_required
 def search_replace(searched) -> str or Response:
-    """Renders results for searching replacement by name."""
+    """Renders results for searching replacement by name.
+
+    :param searched: string for saved items name query
+    :return: rendered search_replace template OR
+        redirect to search_macro if an item has been chosen
+    """
     items = get_saved_items_by_name(searched)
     if request.method == 'POST':
         request_list = list(request.form)
@@ -54,10 +59,16 @@ def search_replace(searched) -> str or Response:
 
 @blueprint.route("/search/replacement", methods=['GET', 'POST'])
 def search_macro() -> str or Response:
-    """Renders results for searching replacement by macronutrients."""
+    """Renders results for searching replacement by macronutrients.
+
+    :return: rendered search_macro template OR
+        redirect to search_macro if adding form has not passed validation OR
+        redirect to diet if item successfully added
+    """
     items = get_saved_items()
     item_id = request.args.get('item_id', default=None)
 
+    # accessing page by choosing an existing item
     if item_id:
         item = get_element_by_id(Model.ITEM, item_id)
         name = item.name
@@ -66,6 +77,7 @@ def search_macro() -> str or Response:
         carb = item.carb
         fat = item.fat
         calories = item.calories
+    # accessing page by putting in macronutrient values manually
     else:
         name = None
         protein = get_float('protein')
@@ -125,7 +137,12 @@ def search_macro() -> str or Response:
 @blueprint.route("/search/discover", methods=['GET', 'POST'])
 @login_required
 def search_discover() -> str or Response:
-    """Renders results for searching replacement by ratings."""
+    """Renders results for searching replacement by ratings.
+
+    :return: rendered search_discover template OR
+        redirect to search_discover if adding form has not passed validation OR
+        redirect to diet item successfully added
+    """
     try:
         items = get_element_list_by_ids(Model.ITEM, session.get('prediction_items'))
     except sqlalchemy.exc.ArgumentError:

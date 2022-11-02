@@ -23,3 +23,5 @@ def send_confirmation_msg(email: str, name: str) -> None:
                   recipients=[email],
                   html=html)
     mail.send(msg)
+
+    return None

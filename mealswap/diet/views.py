@@ -1,23 +1,22 @@
 from flask import Blueprint, redirect, url_for, request, render_template, Response, flash
 from flask_login import login_required, current_user
 from mealswap.diet.helpers import get_calendar
-from mealswap.extensions import login_manager
 from mealswap.controller.controls import Model, get_element_by_id, get_diet_by_date, add_diet, \
-    delete_diet, edit_item_qty_in_diet, delete_item_in_diet, add_item_to_diet, get_saved_items_by_name
+    delete_diet, edit_item_qty_in_diet, add_item_to_diet, get_saved_items_by_name, copy_diet, \
+    delete_item_from_diet
 from mealswap.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyEaForm, EaEditForm
 
 blueprint = Blueprint('diet', __name__, static_folder='../static')
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return get_element_by_id(Model.USER, user_id)
-
-
 @blueprint.route("/calendar", methods=['GET', 'POST'])
 @login_required
-def calendar():
-    """Starting page for looking up diet"""
+def calendar() -> str or Response:
+    """Starting page for looking up diet
+
+    :return: rendered home page template OR
+        redirect to chosen date
+    """
     date_form = DateForm()
     if date_form.validate_on_submit():
         date = date_form.date.data
@@ -30,8 +29,14 @@ def calendar():
 
 @blueprint.route('/day/<date>', methods=['GET', 'POST'])
 @login_required
-def day(date):
-    """Renders the diet for the day"""
+def day(date: str) -> str or Response:
+    """Renders the diet for the day
+
+    :param date: date of the day for which user edits diet information
+    :return: rendered day template OR
+        redirect to the day if copied another diet, deleted diet, edited diet position OR
+        redirect to search if searched for an item to add
+    """
     diet = get_diet_by_date(date)
     total = {'calories': 0, 'protein': 0, 'carbs': 0, 'fat': 0}
 
@@ -55,7 +60,7 @@ def day(date):
         if copied:
             if diet is None:
                 diet = add_diet(user=current_user, date=date)
-            copy_date(copied=copied, diet=diet)
+            copy_diet(diet, copied)
             return redirect(url_for('diet.day', date=date))
 
     search_form = SearchForm()
@@ -101,14 +106,17 @@ def day(date):
 @blueprint.route('/day/delete')
 @login_required
 def delete_item_in_day() -> Response:
-    """Deletes the position from the diet for the date."""
+    """Deletes the position from the diet for the date.
+
+    :return: redirect to the diet after deleting position
+    """
     assoc_id = request.args.get('assoc_id')
     diet_id = request.args.get('diet_id')
     date = request.args.get('date')
 
     assoc = get_element_by_id(Model.DIET_ITEM, assoc_id)
     diet = get_element_by_id(Model.DAY, diet_id)
-    delete_item_in_diet(assoc, diet)
+    delete_item_from_diet(assoc, diet)
     
     if not diet.items:
         delete_diet(diet)
@@ -119,7 +127,14 @@ def delete_item_in_day() -> Response:
 @blueprint.route("/day/<date>/add/<searched>", methods=['GET', 'POST'])
 @login_required
 def diet_search(searched, date) -> str or Response:
-    """Renders search results for string"""
+    """Renders item search results for searched string.
+
+    :param searched: string for item name query
+    :param date: date of the diet that is edited
+    :return: rendered search template OR
+        redirect to search if form for adding meals has not passed validation OR
+        redirect to diet if item successfully added
+    """
     items = get_saved_items_by_name(searched)
     form = QtyEaForm()
     if request.method == 'POST':

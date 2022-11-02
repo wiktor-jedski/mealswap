@@ -1,8 +1,6 @@
 import calendar
 import datetime as dt
 
-from flask import render_template
-
 from mealswap.controller.controls import get_diets_in_current_month
 
 month_dict = {1: "January",
@@ -21,6 +19,7 @@ month_dict = {1: "January",
 
 def get_calendar():
     """Creates a calendar widget for diet homepage."""
+
     diets = get_diets_in_current_month()
     days = [diet.date.day for diet in diets]
 
