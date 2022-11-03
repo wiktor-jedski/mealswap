@@ -1,4 +1,3 @@
-import datetime
 import datetime as dt
 from mealswap.extensions import db
 from flask_login import UserMixin
@@ -31,7 +30,7 @@ class User(UserMixin, db.Model):
     ratings = relationship('RatingsAssoc')
 
     def __init__(self, email: str, password: str, name: str, confirmed: bool, admin: bool = False,
-                 confirmed_on: datetime.date = None):
+                 confirmed_on: dt.date = None):
         """
         :param email: user email address
         :param password: hashed user password
@@ -49,14 +48,14 @@ class User(UserMixin, db.Model):
         self.confirmed_on = confirmed_on
         self.settings.append(Settings())
 
-    def set_password(self, value):
+    def set_password(self, value: str):
         """Set password
 
         :param value: user input
         """
         self.password = generate_password_hash(value)
 
-    def check_password(self, value):
+    def check_password(self, value: str):
         """Checks password hash
 
         :param value: user input
@@ -125,10 +124,10 @@ class DayDiet(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = relationship('User', back_populates='diets')
     date = db.Column(db.Date, nullable=False)
-    weight = db.Column(db.Float)  # not implemented
+    weight = db.Column(db.Float)  # not implemented, weight of the user
     items = relationship("DietItemAssoc")
 
-    def __init__(self, user, date):
+    def __init__(self, user: User, date: dt.date):
         """
         :param user: owner of the diet day
         :param date: date of the diet

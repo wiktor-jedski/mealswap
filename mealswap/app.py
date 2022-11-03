@@ -10,7 +10,8 @@ from mealswap.extensions import (
 
 
 def create_app(config='mealswap.settings') -> Flask:
-    """Create app factory.
+    """
+    Create app factory.
 
     :param config: config object to be used.
     :return: Flask app
