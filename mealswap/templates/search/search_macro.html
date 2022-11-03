@@ -10,16 +10,16 @@
         {% endif %}
         <p>Query:
         {% if calories %}
-        {{ calories }} kcal
+        {{ calories|round(2) }} kcal
         {% endif %}
         {% if protein %}
-        {{ protein }} g protein
+        {{ protein|round(2)  }} g protein
         {% endif %}
         {% if carb %}
-        {{ carb }} g carbs
+        {{ carb|round(2)  }} g carbs
         {% endif %}
         {% if fat %}
-        {{ fat }} g fat
+        {{ fat|round(2)  }} g fat
         {% endif %}
         </p>
         {% with messages = get_flashed_messages() %}

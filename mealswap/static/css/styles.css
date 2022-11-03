@@ -92,12 +92,10 @@ input {
    background-color: var(--tertiary-color)
 }
 
-/* Carousel */
-
-.section-carousel {
-   background-color: var(--primary-color-dark);
-   color: var(--on-primary-color);
-   text-align: center;
+/* Image on homepage */
+.img-example {
+    max-width: 100%;
+    height: auto;
 }
 
 /* Call to action */

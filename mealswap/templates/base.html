@@ -67,6 +67,11 @@
                     {% else %}
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
+                            <a class="nav-link mx-3" href="{{ url_for('user.register') }}">Register</a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
                             <a class="nav-link mx-3" href="{{ url_for('user.login') }}">Log In</a>
                         </li>
                     </ul>
