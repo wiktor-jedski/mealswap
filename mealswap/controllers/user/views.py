@@ -1,12 +1,12 @@
 from flask import render_template, flash, redirect, url_for, Response, Blueprint, abort
 from flask_login import login_user, login_required, logout_user, current_user
-from mealswap.extensions import login_manager, db
+from mealswap.extensions import db
 from mealswap.email import send_confirmation_msg
-from mealswap.forms import RegisterForm, LoginForm, ChangePasswordForm, DeleteAccountForm, DietGoalPercentageForm, \
+from mealswap.controllers.forms import RegisterForm, LoginForm, ChangePasswordForm, DeleteAccountForm, DietGoalPercentageForm, \
     DietGoalMacroForm
 from .token import confirm_token, SignatureExpired, BadSignature
 import datetime as dt
-from ..controller.controls import add_user, get_user_by_email, get_element_by_id, Model, set_password, delete_account, \
+from mealswap.controllers.controls import add_user, get_user_by_email, set_password, delete_account, \
     set_diet_goals
 
 blueprint = Blueprint('user', __name__, static_folder='../static')

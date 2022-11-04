@@ -1,4 +1,4 @@
-from mealswap.models import *
+from mealswap.models.models import *
 from mealswap.extensions import db
 from enum import Enum
 import datetime as dt
@@ -58,7 +58,7 @@ def get_all_elements(model: Model) -> list:
     :param model: table in the database
     :return: list of database objects
     """
-    return dictionary[model.value()].query.all()
+    return dictionary[model.value].query.all()
 
 
 def get_user_by_email(email: str) -> User or None:
@@ -129,7 +129,7 @@ def get_saved_composed_items_by_name(name: str) -> list:
     :param name: string for name search query
     :return: list of Item objects
     """
-    return Item.query.filter(Item.name.contains(name), Item.saved == True,
+    return Item.query.filter(Item.name.contains(name), Item.saved == True, Item.has_weight == True,
                              Item.products is not None, Item.servings > 0).all()
 
 
@@ -462,7 +462,7 @@ def delete_index_from_meal(item: Item, assoc: ItemProductAssoc) -> None:
     return None
 
 
-def add_diet(user: User, date: str) -> DayDiet:
+def add_diet(user: User, date: dt.date) -> DayDiet:
     """
     Creates a new DayDiet in database.
 
@@ -470,7 +470,6 @@ def add_diet(user: User, date: str) -> DayDiet:
     :param date: date of the created DayDiet object
     :return: DayDiet object
     """
-    date = dt.datetime.strptime(date, "%Y-%m-%d").date()
     diet = DayDiet(user=user, date=date)
     db.session.add(diet)
     db.session.commit()

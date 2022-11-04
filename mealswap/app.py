@@ -1,6 +1,7 @@
 from flask import Flask
-from mealswap import add, edit, public, rate, search, user, commands, diet
-from mealswap.controller.controls import get_element_by_id, Model
+from mealswap import commands
+from mealswap.controllers import add, diet, edit, public, rate, search, user
+from mealswap.controllers.controls import get_element_by_id, Model
 from mealswap.extensions import (
     login_manager,
     db,

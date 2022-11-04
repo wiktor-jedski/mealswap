@@ -2,7 +2,7 @@ from flask import request
 from math import sqrt, acos, pi
 import numpy as np
 from scipy.optimize import minimize
-from mealswap.controller.controls import get_all_elements, Model, get_saved_items, get_ratings_count_by_user, \
+from mealswap.controllers.controls import get_all_elements, Model, get_saved_items, get_ratings_count_by_user, \
     get_element_by_id
 
 

@@ -1,9 +1,9 @@
 from flask import Blueprint, Response, redirect, url_for, render_template, flash, abort, request
 from flask_login import current_user, login_required
-from mealswap.controller.controls import add_product_to_db, get_element_by_id, Model, add_meal_to_db, set_meal_recipe, \
+from mealswap.controllers.controls import add_product_to_db, get_element_by_id, Model, add_meal_to_db, set_meal_recipe, \
     set_qty_in_meal, clear_meal, save_meal, get_products_by_name, add_product_to_meal, copy_meal, \
     delete_index_from_meal, get_saved_composed_items_by_name
-from mealswap.forms import ProductForm, WeightMealForm, CompositeMealForm, LinkRecipeServingsForm, CopyMealForm, \
+from mealswap.controllers.forms import ProductForm, WeightMealForm, CompositeMealForm, LinkRecipeServingsForm, CopyMealForm, \
     SearchForm, EditForm, DeleteForm, SaveForm, ServingMealForm, QtyEaForm
 
 blueprint = Blueprint('add', __name__, static_folder='../static')

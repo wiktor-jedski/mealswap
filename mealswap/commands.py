@@ -1,6 +1,6 @@
 import click
 from mealswap.extensions import db
-from mealswap.models import User, Item, Product, ItemProductAssoc
+from mealswap.models.models import User, Item, Product, ItemProductAssoc
 from werkzeug.security import generate_password_hash
 import datetime as dt
 import csv

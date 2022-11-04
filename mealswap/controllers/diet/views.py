@@ -1,10 +1,10 @@
 from flask import Blueprint, redirect, url_for, request, render_template, Response, flash
 from flask_login import login_required, current_user
-from mealswap.diet.helpers import get_calendar
-from mealswap.controller.controls import Model, get_element_by_id, get_diet_by_date, add_diet, \
+from mealswap.controllers.diet.helpers import get_calendar
+from mealswap.controllers.controls import Model, get_element_by_id, get_diet_by_date, add_diet, \
     delete_diet, edit_item_qty_in_diet, add_item_to_diet, get_saved_items_by_name, copy_diet, \
     delete_item_from_diet
-from mealswap.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyEaForm, EaEditForm
+from mealswap.controllers.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyEaForm, EaEditForm
 
 blueprint = Blueprint('diet', __name__, static_folder='../static')
 
@@ -69,7 +69,7 @@ def day(date: str) -> str or Response:
         return redirect(url_for('diet.diet_search', searched=search_str, date=date))
 
     delete_form = DeleteForm()
-    if delete_form.validate_on_submit():
+    if delete_form.validate_on_submit() and delete_form.submitDeleteForm.data:
         delete_diet(diet)
         return redirect(url_for('diet.day', date=date))
 

@@ -1,7 +1,7 @@
 import calendar
 import datetime as dt
 
-from mealswap.controller.controls import get_diets_in_current_month
+from mealswap.controllers.controls import get_diets_in_current_month
 
 month_dict = {1: "January",
               2: "February",

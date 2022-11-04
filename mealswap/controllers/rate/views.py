@@ -1,7 +1,7 @@
 from flask import Blueprint, Response, redirect, url_for, render_template, request, flash, session
 from flask_login import current_user, login_required
-from mealswap.forms import SearchForm, DiscoverForm
-from mealswap.controller.controls import Model, get_element_by_id, get_element_list_by_ids, set_rating, \
+from mealswap.controllers.forms import SearchForm, DiscoverForm
+from mealswap.controllers.controls import Model, get_element_by_id, get_element_list_by_ids, set_rating, \
     get_saved_items, get_ratings_by_user, get_saved_items_by_name
 from random import randrange
 

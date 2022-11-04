@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, FloatField, TextAreaField, DateField, DecimalField, BooleanField, \
     PasswordField, IntegerField
 from wtforms.validators import DataRequired, NumberRange, Optional, URL, Email, Length, EqualTo
-from mealswap.controller.controls import get_user_by_email
+from mealswap.controllers.controls import get_user_by_email
 
 
 class ProductForm(FlaskForm):

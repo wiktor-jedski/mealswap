@@ -1,8 +1,8 @@
 from flask import render_template, Blueprint, Response, redirect, url_for
 from flask_login import login_required, current_user
-from mealswap.controller.controls import get_element_by_id, Model, get_open_items_by_user, get_ratings_by_user, \
+from mealswap.controllers.controls import get_element_by_id, Model, get_open_items_by_user, get_ratings_by_user, \
     get_saved_items_by_name, delete_meal_from_db
-from mealswap.forms import SearchForm
+from mealswap.controllers.forms import SearchForm
 
 blueprint = Blueprint('edit', __name__, static_folder='../static')
 

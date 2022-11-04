@@ -1,8 +1,8 @@
 import sqlalchemy.exc
 from flask import Blueprint, render_template, Response, redirect, url_for, request, flash, session
 from flask_login import current_user, login_required
-from mealswap.forms import SearchForm, MacroForm, DiscoverForm, DateQtyEaForm
-from mealswap.controller.controls import get_element_by_id, Model, get_saved_items_by_name, get_saved_items, \
+from mealswap.controllers.forms import SearchForm, MacroForm, DiscoverForm, DateQtyEaForm
+from mealswap.controllers.controls import get_element_by_id, Model, get_saved_items_by_name, get_saved_items, \
     get_diet_by_date, add_diet, add_item_to_diet, get_element_list_by_ids
 from .helpers import get_float, get_similar_items, get_predictions
 

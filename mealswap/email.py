@@ -1,5 +1,5 @@
 from mealswap.extensions import mail
-from mealswap.user.token import generate_confirmation_token
+from mealswap.controllers.user.token import generate_confirmation_token
 from flask import url_for, render_template
 from flask_mail import Message
 from mealswap.settings import MAIL_DEFAULT_SENDER
