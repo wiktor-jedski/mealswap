@@ -647,3 +647,16 @@ def set_diet_goals(user: User, calories: float, protein: float or int, carb: flo
     db.session.commit()
 
     return None
+
+
+def update_weight(diet: DayDiet, weight: float) -> None:
+    """
+    Updates User weight for a given DayDiet.
+    :param diet: DayDiet that contains data for a given date
+    :param weight: weight of the body as measured by the User
+    :return: None
+    """
+    diet.weight = weight
+    db.session.commit()
+
+    return None

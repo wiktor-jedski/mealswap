@@ -392,3 +392,8 @@ class DietGoalMacroForm(FlaskForm):
             return False
 
         return True
+
+
+class WeightForm(FlaskForm):
+    weight = FloatField('Your Weight (kg):', validators=[NumberRange(min=0, message="Number has to be positive")])
+    submitWeightForm = SubmitField('Update')

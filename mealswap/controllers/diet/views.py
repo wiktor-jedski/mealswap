@@ -3,8 +3,8 @@ from flask_login import login_required, current_user
 from mealswap.controllers.diet.helpers import get_calendar
 from mealswap.controllers.controls import Model, get_element_by_id, get_diet_by_date, add_diet, \
     delete_diet, edit_item_qty_in_diet, add_item_to_diet, get_saved_items_by_name, copy_diet, \
-    delete_item_from_diet
-from mealswap.controllers.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyEaForm, EaEditForm
+    delete_item_from_diet, update_weight
+from mealswap.controllers.forms import DateForm, SearchForm, DeleteForm, EditForm, QtyEaForm, EaEditForm, WeightForm
 
 blueprint = Blueprint('diet', __name__, static_folder='../static')
 
@@ -34,7 +34,7 @@ def day(date: str) -> str or Response:
 
     :param date: date of the day for which user edits diet information
     :return: rendered day template OR
-        redirect to the day if copied another diet, deleted diet, edited diet position OR
+        redirect to the day if copied another diet, deleted diet, edited diet position, updated weight OR
         redirect to search if searched for an item to add
     """
     diet = get_diet_by_date(date)
@@ -52,6 +52,16 @@ def day(date: str) -> str or Response:
                 total['protein'] += a.item.protein * a.qty
                 total['carbs'] += a.item.carb * a.qty
                 total['fat'] += a.item.fat * a.qty
+
+    weight_form = WeightForm()
+    if weight_form.validate_on_submit() and weight_form.submitWeightForm.data:
+        if diet is None:
+            diet = add_diet(user=current_user, date=date)
+        update_weight(diet, weight_form.weight.data)
+        flash("Your weight has been updated!")
+        return redirect(url_for('diet.day', date=date))
+    if diet:
+        weight_form.weight.data = diet.weight
 
     copy_form = DateForm()
     if copy_form.validate_on_submit():
@@ -100,7 +110,7 @@ def day(date: str) -> str or Response:
     return render_template('diet/day.html',
                            user=current_user, date=date, diet=diet, total=total, edit_form=edit_form,
                            date_form=copy_form, search_form=search_form, delete_form=delete_form,
-                           ea_edit_form=ea_edit_form)
+                           ea_edit_form=ea_edit_form, weight_form=weight_form)
 
 
 @blueprint.route('/day/delete')
