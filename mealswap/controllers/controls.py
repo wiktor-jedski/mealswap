@@ -462,7 +462,7 @@ def delete_index_from_meal(item: Item, assoc: ItemProductAssoc) -> None:
     return None
 
 
-def add_diet(user: User, date: dt.date) -> DayDiet:
+def add_diet(user: User, date: dt.date or str) -> DayDiet:
     """
     Creates a new DayDiet in database.
 
@@ -470,6 +470,8 @@ def add_diet(user: User, date: dt.date) -> DayDiet:
     :param date: date of the created DayDiet object
     :return: DayDiet object
     """
+    if type(date) == str:
+        date = dt.datetime.strptime(date, "%Y-%m-%d").date()
     diet = DayDiet(user=user, date=date)
     db.session.add(diet)
     db.session.commit()
