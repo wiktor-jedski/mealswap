@@ -9,16 +9,16 @@
         <p>Replacements for: {{ name }}</p>
         {% endif %}
         <p>Query:
-        {% if calories %}
+        {% if calories is not none %}
         {{ calories|round(2) }} kcal
         {% endif %}
-        {% if protein %}
+        {% if protein is not none %}
         {{ protein|round(2)  }} g protein
         {% endif %}
-        {% if carb %}
+        {% if carb is not none %}
         {{ carb|round(2)  }} g carbs
         {% endif %}
-        {% if fat %}
+        {% if fat is not none %}
         {{ fat|round(2)  }} g fat
         {% endif %}
         </p>
