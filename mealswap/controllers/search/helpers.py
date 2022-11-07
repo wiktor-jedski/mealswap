@@ -43,19 +43,19 @@ def get_similar_items(items, protein, carb, fat, calories, item_id) -> list:
             numerator = 0
             den1 = 0
             den2 = 0
-            if protein:
+            if protein is not None:
                 numerator += i.protein * protein
                 den1 += i.protein * i.protein
                 den2 += protein * protein
-            if carb:
+            if carb is not None:
                 numerator += i.carb * carb
                 den1 += i.carb * i.carb
                 den2 += carb * carb
-            if fat:
+            if fat is not None:
                 numerator += i.fat * fat
                 den1 += i.fat * i.fat
                 den2 += fat * fat
-            if calories:
+            if calories is not None:
                 numerator += i.calories * calories
                 den1 += i.calories * i.calories
                 den2 += calories * calories
