@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, FloatField, TextAreaField, DateField, DecimalField, BooleanField, \
+from wtforms import StringField, SubmitField, TextAreaField, DateField, DecimalField, BooleanField, \
     PasswordField, IntegerField
 from wtforms.validators import DataRequired, NumberRange, Optional, URL, Email, Length, EqualTo
 from mealswap.controllers.controls import get_user_by_email
@@ -8,15 +8,15 @@ from mealswap.controllers.controls import get_user_by_email
 class ProductForm(FlaskForm):
     """A class used to create forms for product data"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
-    protein = FloatField('Proteins per 100g',
-                         validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
-    carb = FloatField('Carbs per 100g',
-                      validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
-    fat = FloatField('Fats per 100g',
-                     validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
-    weight_per_ea = FloatField('Weight per ea (optional)',
-                               validators=[NumberRange(min=0,
-                                                       message='Please enter the value bigger than 0'), Optional()])
+    protein = DecimalField('Proteins per 100g',
+                           validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
+    carb = DecimalField('Carbs per 100g',
+                        validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
+    fat = DecimalField('Fats per 100g',
+                       validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
+    weight_per_ea = DecimalField('Weight per ea (optional)',
+                                 validators=[NumberRange(min=0,
+                                                         message='Please enter the value bigger than 0'), Optional()])
     submitProductForm = SubmitField('Add product')
 
     def validate(self, **kwargs):
@@ -35,14 +35,14 @@ class ProductForm(FlaskForm):
 class WeightMealForm(FlaskForm):
     """A class used to create forms for meals with known macronutrient values per 100g"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
-    protein = FloatField('Proteins per 100g',
-                         validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
-    carb = FloatField('Carbs per 100g',
-                      validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
-    fat = FloatField('Fats per 100g',
-                     validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
-    qty = FloatField('Weight per serving (optional)',
-                     validators=[Optional(), NumberRange(min=0, message='Weight must be bigger than 0')])
+    protein = DecimalField('Proteins per 100g',
+                           validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
+    carb = DecimalField('Carbs per 100g',
+                        validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
+    fat = DecimalField('Fats per 100g',
+                       validators=[NumberRange(min=0, max=100, message='Please enter the value between 0 and 100')])
+    qty = DecimalField('Weight per serving (optional)',
+                       validators=[Optional(), NumberRange(min=0, message='Weight must be bigger than 0')])
     link = StringField('Link to the recipe (optional)', validators=[URL(), Optional()])
     recipe = TextAreaField('Recipe (optional)')
     submitWeightMealForm = SubmitField('Add meal')
@@ -63,12 +63,12 @@ class WeightMealForm(FlaskForm):
 class ServingMealForm(FlaskForm):
     """A class used to create forms for meals with known macronutrient values per serving"""
     name = StringField('Name', validators=[DataRequired(message='Please fill in the data')])
-    protein = FloatField('Proteins per serving',
-                         validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
-    carb = FloatField('Carbs per serving',
-                      validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
-    fat = FloatField('Fats per serving',
-                     validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
+    protein = DecimalField('Proteins per serving',
+                           validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
+    carb = DecimalField('Carbs per serving',
+                        validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
+    fat = DecimalField('Fats per serving',
+                       validators=[NumberRange(min=0, message='Macronutrient value must be at least 0')])
     link = StringField('Link to the recipe (optional)', validators=[URL(), Optional()])
     recipe = TextAreaField('Recipe (optional)')
     submitServingMealForm = SubmitField('Add meal')
@@ -99,7 +99,7 @@ class SearchForm(FlaskForm):
 
 class QtyEaForm(FlaskForm):
     """A class used to create quantity/ea forms to add new items into diet or products into meals"""
-    qty = FloatField('Qty (g):', validators=[NumberRange(min=0, message='Qty cannot be negative')])
+    qty = DecimalField('Qty (g):', validators=[NumberRange(min=0, message='Qty cannot be negative')])
     ea = IntegerField('Qty (ea)', validators=[NumberRange(min=0, message='Qty cannot be negative')])
     submitQtyEaForm = SubmitField('Add')
 
@@ -120,7 +120,7 @@ class QtyEaForm(FlaskForm):
 class DateQtyEaForm(FlaskForm):
     """A class used to create form for adding a meal replacement to a chosen day"""
     date = DateField('Enter date:', validators=[DataRequired()])
-    qty = FloatField('Qty (g):', validators=[NumberRange(min=0, message='Qty cannot be negative')])
+    qty = DecimalField('Qty (g):', validators=[NumberRange(min=0, message='Qty cannot be negative')])
     ea = IntegerField('Qty (ea):', validators=[NumberRange(min=1, message='Qty cannot be negative')])
     submitDateQtyForm = SubmitField('Add')
 
@@ -169,7 +169,8 @@ class MacroForm(FlaskForm):
 
 class EditForm(FlaskForm):
     """A class used to create quantity forms for editing"""
-    qty = FloatField('New qty (g):', validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
+    qty = DecimalField('New qty (g):',
+                       validators=[DataRequired(), NumberRange(min=0, message='Qty cannot be negative')])
     submitEditForm = SubmitField('Edit')
 
 
@@ -326,8 +327,8 @@ class DeleteAccountForm(FlaskForm):
 
 class DietGoalPercentageForm(FlaskForm):
     """A class used to create a form for setting diet goals based on percentages"""
-    calories = FloatField('Calories (kcal)', validators=[DataRequired(),
-                                                         NumberRange(min=1, message="Number has to be positive")])
+    calories = DecimalField('Calories (kcal)', validators=[DataRequired(),
+                                                           NumberRange(min=1, message="Number has to be positive")])
     protein = IntegerField('Protein (%)',
                            validators=[DataRequired(),
                                        NumberRange(min=0, max=100, message="Value has to be between 0 and 100")])
@@ -355,14 +356,14 @@ class DietGoalPercentageForm(FlaskForm):
 
 class DietGoalMacroForm(FlaskForm):
     """A class used to create a form for setting diet goals based on concrete numbers"""
-    calories = FloatField('Calories (kcal)',
-                          validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
-    protein = FloatField('Protein (g)',
-                         validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
-    carb = FloatField('Carbohydrate (g)',
-                      validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
-    fat = FloatField('Fat (g)',
-                     validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    calories = DecimalField('Calories (kcal)',
+                            validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    protein = DecimalField('Protein (g)',
+                           validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    carb = DecimalField('Carbohydrate (g)',
+                        validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
+    fat = DecimalField('Fat (g)',
+                       validators=[Optional(), NumberRange(min=0, message="Number has to be positive")])
     submitDietGoalMacroForm = SubmitField('Submit')
 
     def validate(self, **kwargs):
@@ -386,7 +387,7 @@ class DietGoalMacroForm(FlaskForm):
             calories_check = 0
         else:
             calories_check = self.calories.data
-        if protein_check*4 + carb_check*4 + fat_check*9 > calories_check:
+        if protein_check * 4 + carb_check * 4 + fat_check * 9 > calories_check:
             self.calories.errors.append("Calories from macronutrients are bigger than goal calories. "
                                         "Please change one of them")
             return False
@@ -395,5 +396,5 @@ class DietGoalMacroForm(FlaskForm):
 
 
 class WeightForm(FlaskForm):
-    weight = FloatField('Your Weight (kg):', validators=[NumberRange(min=0, message="Number has to be positive")])
+    weight = DecimalField('Your Weight (kg):', validators=[NumberRange(min=0, message="Number has to be positive")])
     submitWeightForm = SubmitField('Update')
