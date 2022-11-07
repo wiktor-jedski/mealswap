@@ -222,7 +222,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=8)])
     confirmation = PasswordField('Confirm password', validators=[
         DataRequired(), EqualTo('password', message='Passwords must match')])
-    submit = SubmitField('Create New User')
+    submit = SubmitField('Create Account')
 
     def __init__(self, *args, **kwargs):
         super(RegisterForm, self).__init__(*args, **kwargs)
