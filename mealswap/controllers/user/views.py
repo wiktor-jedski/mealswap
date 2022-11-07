@@ -7,7 +7,7 @@ from mealswap.controllers.forms import RegisterForm, LoginForm, ChangePasswordFo
 from .token import confirm_token, SignatureExpired, BadSignature
 import datetime as dt
 from mealswap.controllers.controls import add_user, get_user_by_email, set_password, delete_account, \
-    set_diet_goals
+    set_diet_goals, get_settings_by_user
 
 blueprint = Blueprint('user', __name__, static_folder='../static')
 
@@ -97,6 +97,8 @@ def settings() -> str or Response:
         redirect to home page if user deleted account
     """
 
+    current_settings = get_settings_by_user(current_user)
+
     change_password_form = ChangePasswordForm(current_user)
     if change_password_form.validate_on_submit():
         set_password(current_user, change_password_form.new_password.data)
@@ -128,6 +130,15 @@ def settings() -> str or Response:
         set_diet_goals(current_user, calories, protein, carb, fat, percentage=False)
         flash("Diet goals updated successfully.")
         return redirect(url_for('user.settings'))
+    # populate the form if data exists
+    if current_settings.calories_goal:
+        diet_goal_macro_form.calories.data = current_settings.calories_goal
+    if current_settings.protein_goal:
+        diet_goal_macro_form.protein.data = current_settings.protein_goal
+    if current_settings.carb_goal:
+        diet_goal_macro_form.carb.data = current_settings.carb_goal
+    if current_settings.fat_goal:
+        diet_goal_macro_form.fat.data = current_settings.fat_goal
 
     return render_template('user/settings.html', user=current_user, change_password_form=change_password_form,
                            delete_form=delete_form, diet_goal_percentage_form=diet_goal_percentage_form,

@@ -173,6 +173,16 @@ def get_rating_by_ids(item_id: int, user_id: int) -> RatingsAssoc or None:
     return RatingsAssoc.query.filter_by(item_id=item_id, user_id=user_id).first()
 
 
+def get_settings_by_user(user: User) -> Settings:
+    """
+    Returns Settings connected to a User.
+
+    :param user: User object that has Settings
+    :return: Settings object
+    """
+    return user.settings[0]
+
+
 def set_rating(item: Item, user: User, rating: str) -> db.Model:
     """
     Sets rating for Item by User by adding RatingsAssoc object to database

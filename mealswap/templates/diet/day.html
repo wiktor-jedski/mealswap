@@ -21,6 +21,9 @@
             {% if user.settings[0].fat_goal %}
             {{ user.settings[0].fat_goal|round(2) }} g fat
             {% endif %}
+            {% if user.settings[0].calories_goal + user.settings[0].protein_goal + user.settings[0].carb_goal + user.settings[0].fat_goal == 0 %}
+            No diet goal set.
+            {% endif %}
         </p>
         {% with messages = get_flashed_messages() %}
         <p>{{ messages[-1] }}</p>
