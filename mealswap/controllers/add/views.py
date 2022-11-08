@@ -95,6 +95,7 @@ def compose_meal(item_id: str) -> str or Response:
     link_recipe_form = LinkRecipeServingsForm()
     if link_recipe_form.validate_on_submit() and link_recipe_form.submitLinkRecipeForm.data:
         set_meal_recipe(item, link_recipe_form.link.data, link_recipe_form.recipe.data, link_recipe_form.servings.data)
+        flash("Optional data updated.")
         return redirect(url_for('add.compose_meal', item_id=item_id))
     link_recipe_form.link.data = item.link
     link_recipe_form.recipe.data = item.recipe

@@ -14,6 +14,11 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-12">
+                {% with messages = get_flashed_messages() %}
+                <p>
+                    {{ messages[-1] }}
+                </p>
+                {% endwith %}
                 {{ link_recipe_form.csrf_token() }}
                 {{ render_form(link_recipe_form) }}
             </div>
