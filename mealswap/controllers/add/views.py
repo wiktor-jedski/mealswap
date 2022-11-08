@@ -123,7 +123,7 @@ def compose_meal(item_id: str) -> str or Response:
         new_qty = edit_form.qty.data
 
         assoc = get_element_by_id(Model.ITEM_PRODUCT, index)
-        set_qty_in_meal(assoc, item, new_qty)
+        set_qty_in_meal(assoc, item, float(new_qty))
         return redirect(url_for('add.compose_meal', item_id=item_id))
 
     # delete all items
@@ -176,9 +176,9 @@ def compose_search(item_id: str, searched: str) -> str or Response:
             flash("Please fill only one field - either qty in grams or ea.")
             return redirect(url_for('add.compose_search', item_id=item_id, searched=searched))
         elif form.qty.data:
-            add_product_to_meal(item, product, form.qty.data)
+            add_product_to_meal(item, product, float(form.qty.data))
         else:
-            add_product_to_meal(item, product, form.ea.data*product.weight_per_ea)
+            add_product_to_meal(item, product, float(form.ea.data)*product.weight_per_ea)
 
         return redirect(url_for('add.compose_meal', item_id=item_id))
     return render_template('add/compose_search.html',
