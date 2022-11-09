@@ -136,6 +136,7 @@ def compose_meal(item_id: str) -> str or Response:
     save_form = SaveForm()
     if save_form.validate_on_submit() and save_form.submitSaveForm.data:
         save_meal(item)
+        flash(f'Meal "{item.name}" successfully added!', category='success')
         return redirect(url_for('add.add_meal'))
 
     return render_template('add/compose_meal.html', edit_form=edit_form, copy_form=copy_form, save_form=save_form,
