@@ -11,13 +11,7 @@
     <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-12 text-center">
-                {% if email %}
                 <p>A confirmation link has been sent to your email at {{ email }}. Please follow the link to continue.</p>
-                {% else %}
-                    {% with messages = get_flashed_messages() %}
-                            <p>{{ messages[-1] }}</p>
-                    {% endwith %}
-                {% endif %}
             </div>
         </div>
     </div>

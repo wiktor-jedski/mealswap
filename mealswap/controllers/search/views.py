@@ -110,13 +110,13 @@ def search_macro() -> str or Response:
 
         # anonymous form validation
         if qty is None and ea is None:
-            flash("Either qty in grams or ea has to be filled.")
+            flash("Either qty in grams or ea has to be filled.", category='error')
             if item_id:
                 return redirect(url_for('search.search_macro', item_id=item_id))
             else:
                 return redirect(url_for('search.search_macro', protein=protein, carb=carb, fat=fat, calories=calories))
         if qty and ea:
-            flash("Please fill only one field - either qty in grams or ea.")
+            flash("Please fill only one field - either qty in grams or ea.", category='error')
             if item_id:
                 return redirect(url_for('search.search_macro', item_id=item_id))
             else:
@@ -173,10 +173,10 @@ def search_discover() -> str or Response:
 
         # anonymous form validation
         if qty is None and ea is None:
-            flash("Either qty in grams or ea has to be filled.")
+            flash("Either qty in grams or ea has to be filled.", category='error')
             return redirect(url_for('search.search_discover'))
         if qty and ea:
-            flash("Please fill only one field - either qty in grams or ea.")
+            flash("Please fill only one field - either qty in grams or ea.", category='error')
             return redirect(url_for('search.search_discover'))
 
         if diet is None:

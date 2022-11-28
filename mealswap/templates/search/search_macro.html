@@ -22,9 +22,6 @@
         {{ fat|round(2)  }} g fat
         {% endif %}
         </p>
-        {% with messages = get_flashed_messages() %}
-            <p class="font-weight-bold">{{ messages[-1] }}</p>
-        {% endwith %}
     </div>
 </section>
 {% if items %}
