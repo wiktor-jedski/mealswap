@@ -71,7 +71,7 @@ def confirm_email(token: str) -> str or Response:
     try:
         email = confirm_token(token)
     except SignatureExpired or BadSignature:
-        flash('The confirmation link is invalid or it has expired', 'danger')
+        flash('The confirmation link is invalid or it has expired', 'error')
     else:
         user = get_user_by_email(email)
         if user:
@@ -102,7 +102,7 @@ def settings() -> str or Response:
     change_password_form = ChangePasswordForm(current_user)
     if change_password_form.validate_on_submit():
         set_password(current_user, change_password_form.new_password.data)
-        flash("Password changed.")
+        flash("Password changed.", category='success')
         return redirect(url_for('user.settings'))
 
     delete_form = DeleteAccountForm(current_user)
@@ -118,7 +118,7 @@ def settings() -> str or Response:
         carb_percent = diet_goal_percentage_form.carb.data
         fat_percent = diet_goal_percentage_form.fat.data
         set_diet_goals(current_user, calories, protein_percent, carb_percent, fat_percent, percentage=True)
-        flash("Diet goals updated successfully.")
+        flash("Diet goals updated successfully.", category='success')
         return redirect(url_for('user.settings'))
 
     diet_goal_macro_form = DietGoalMacroForm()
@@ -128,7 +128,7 @@ def settings() -> str or Response:
         carb = diet_goal_macro_form.carb.data
         fat = diet_goal_macro_form.fat.data
         set_diet_goals(current_user, calories, protein, carb, fat, percentage=False)
-        flash("Diet goals updated successfully.")
+        flash("Diet goals updated successfully.", category='success')
         return redirect(url_for('user.settings'))
     # populate the form if data exists
     if current_settings.calories_goal:

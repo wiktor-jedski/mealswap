@@ -58,7 +58,7 @@ def day(date: str) -> str or Response:
         if diet is None:
             diet = add_diet(user=current_user, date=date)
         update_weight(diet, weight_form.weight.data)
-        flash("Your weight has been updated!")
+        flash("Your weight has been updated!", category='success')
         return redirect(url_for('diet.day', date=date))
     if diet:
         weight_form.weight.data = diet.weight
@@ -167,10 +167,10 @@ def diet_search(searched, date) -> str or Response:
 
         # anonymous form validation
         if qty is None and ea is None:
-            flash("Either qty in grams or ea has to be filled.")
+            flash("Either qty in grams or ea has to be filled.", category='error')
             return redirect(url_for('diet.diet_search', searched=searched, date=date))
         if qty and ea:
-            flash("Please fill only one field - either qty in grams or ea.")
+            flash("Please fill only one field - either qty in grams or ea.", category='error')
             return redirect(url_for('diet.diet_search', searched=searched, date=date))
 
         if diet is None:
