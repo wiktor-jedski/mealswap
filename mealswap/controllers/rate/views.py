@@ -4,6 +4,7 @@ from mealswap.controllers.forms import SearchForm, DiscoverForm
 from mealswap.controllers.controls import Model, get_element_by_id, get_element_list_by_ids, set_rating, \
     get_saved_items, get_ratings_by_user, get_saved_items_by_name
 from random import randrange
+from mealswap.controllers.search.helpers import paginate_list
 
 blueprint = Blueprint('rate', __name__, static_folder='../static')
 
@@ -37,13 +38,17 @@ def rate_search(searched) -> str:
     :param searched: string for saved items name query
     :return: rendered rate_search template
     """
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
     items_searched = get_saved_items_by_name(searched)
     assoc_items_rated = get_ratings_by_user(current_user)
 
     items_rated = [assoc.item for assoc in assoc_items_rated]
     items = [item for item in items_searched if item not in items_rated]
 
-    return render_template('rate/rate_search.html', user=current_user, items=items, searched=searched)
+    pagination = paginate_list(items, page, per_page)
+
+    return render_template('rate/rate_search.html', user=current_user, pagination=pagination, searched=searched)
 
 
 @blueprint.route('/rate/discover')
@@ -53,9 +58,12 @@ def rate_discover():
 
     :return: rendered rate_discover template
     """
-    items = session.get('rateable_items')  # get items if saved previously
-    if items:
-        items = get_element_list_by_ids(Model.ITEM, items)
+    item_ids = session.get('rateable_items')  # get items if saved previously
+    item = None
+    if item_ids:
+        items = get_element_list_by_ids(Model.ITEM, item_ids)
+        if items:
+            item = items[randrange(len(items))]
     else:
         items = get_saved_items()
         items_rated = get_ratings_by_user(current_user)
@@ -66,11 +74,9 @@ def rate_discover():
                 continue
         rateable_items = [item.id for item in items]
         session['rateable_items'] = rateable_items  # saving for later
+        if len(rateable_items) > 0:
+            item = get_element_by_id(model=Model.ITEM, element_id=randrange(len(rateable_items)))
 
-    if items:
-        item = items[randrange(len(items))]
-    else:
-        item = None
     return render_template('rate/rate_discover.html', user=current_user, item=item)
 
 

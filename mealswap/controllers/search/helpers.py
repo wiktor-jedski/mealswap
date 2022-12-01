@@ -4,6 +4,7 @@ import numpy as np
 from scipy.optimize import minimize
 from mealswap.controllers.controls import get_all_elements, Model, get_saved_items, get_ratings_count_by_user, \
     get_element_by_id
+from flask_sqlalchemy import Pagination
 
 
 def get_float(key) -> float or None:
@@ -62,8 +63,8 @@ def get_similar_items(items, protein, carb, fat, calories, item_id) -> list:
             denominator = sqrt(den1) * sqrt(den2)
         try:
             distance = acos(numerator / denominator)
-        except ZeroDivisionError and ValueError:
-            # can be divided by 0 - skip it
+        except (ZeroDivisionError, ValueError):
+            # cannot be divided by 0 - skip it
             continue
         else:
             similarity = 1 - distance * 2 / pi
@@ -72,6 +73,22 @@ def get_similar_items(items, protein, carb, fat, calories, item_id) -> list:
     # sort results based on similarity
     similarity_list.sort(key=lambda x: x[0], reverse=True)
     return similarity_list
+
+
+def paginate_list(lst: list, page: int, per_page: int) -> Pagination:
+    """
+    Takes a list and returns a Pagination object.
+
+    :param lst: list to be paginated
+    :param page: current page number
+    :param per_page: number of items per page
+    :return: Pagination object
+    """
+    start = (page - 1) * per_page
+    end = start + per_page
+    items = lst[start:end]
+    pagination = Pagination(None, page, per_page, len(lst), items)
+    return pagination
 
 
 def f(params, num_users, num_items, num_features, Y, R, lambda_):

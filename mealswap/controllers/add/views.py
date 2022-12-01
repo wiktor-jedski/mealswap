@@ -154,7 +154,9 @@ def compose_search(item_id: str, searched: str) -> str or Response:
     :return: rendered compose_search template OR
         redirect to compose_meal if the product has been added
     """
-    products = get_products_by_name(searched)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    products = get_products_by_name(searched, paginate=True, page=page, per_page=5)
     form = QtyEaForm()
     if request.method == 'POST':
         request_list = list(request.form)
@@ -183,7 +185,7 @@ def compose_search(item_id: str, searched: str) -> str or Response:
 
         return redirect(url_for('add.compose_meal', item_id=item_id))
     return render_template('add/compose_search.html',
-                           user=current_user, products=products, searched=searched, form=form)
+                           user=current_user, pagination=products, searched=searched, form=form)
 
 
 @blueprint.route("/compose_meal/<item_id>/copy/<searched>", methods=['GET', 'POST'])
@@ -196,7 +198,9 @@ def compose_copy(item_id: str, searched: str) -> str or Response:
     :return: rendered compose_copy template OR
         redirect to compose_meal if a meal has been chosen to copy
     """
-    items = get_saved_composed_items_by_name(searched)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    items = get_saved_composed_items_by_name(searched, pagination=True, page=page, per_page=per_page)
     if request.method == 'POST':
         request_list = list(request.form)
         copy_item_id = request_list[0]
@@ -207,7 +211,7 @@ def compose_copy(item_id: str, searched: str) -> str or Response:
 
         return redirect(url_for('add.compose_meal', item_id=item_id))
 
-    return render_template('add/compose_copy.html', user=current_user, items=items, searched=searched)
+    return render_template('add/compose_copy.html', user=current_user, pagination=items, searched=searched)
 
 
 @blueprint.route('/compose_meal/delete_pos')

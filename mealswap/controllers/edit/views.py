@@ -1,8 +1,9 @@
-from flask import render_template, Blueprint, Response, redirect, url_for
+from flask import render_template, Blueprint, Response, redirect, url_for, request
 from flask_login import login_required, current_user
 from mealswap.controllers.controls import get_element_by_id, Model, get_open_items_by_user, get_ratings_by_user, \
     get_saved_items_by_name, delete_meal_from_db
 from mealswap.controllers.forms import SearchForm
+from mealswap.controllers.search.helpers import paginate_list
 
 blueprint = Blueprint('edit', __name__, static_folder='../static')
 
@@ -14,8 +15,10 @@ def edit_meals() -> str:
 
     :return: rendered edit_meals template
     """
-    items = get_open_items_by_user(current_user)
-    return render_template('edit/edit_meals.html', user=current_user, items=items)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    items = get_open_items_by_user(current_user, pagination=True, page=page, per_page=per_page)
+    return render_template('edit/edit_meals.html', user=current_user, pagination=items)
 
 
 @blueprint.route('/edit_meals/delete/<item_id>')
@@ -55,9 +58,12 @@ def edit_ratings_search(searched: str) -> str or Response:
     :param searched: string for saved items name query
     :return: rendered edit_ratings_search template
     """
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
     items_searched = get_saved_items_by_name(searched)
     assoc_items_rated = get_ratings_by_user(current_user)
 
     items = [(assoc.rating, assoc.item) for assoc in assoc_items_rated if assoc.item in items_searched]
+    pagination = paginate_list(items, page, per_page)
 
-    return render_template('edit/edit_ratings_search.html', user=current_user, items=items, searched=searched)
+    return render_template('edit/edit_ratings_search.html', user=current_user, pagination=pagination, searched=searched)
