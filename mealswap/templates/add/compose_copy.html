@@ -64,6 +64,39 @@
         </div>
     {% endfor %}
 </section>
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('add.compose_copy', page=pagination.prev_num) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('add.compose_copy', page=number) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('add.compose_copy', page=pagination.next_num) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
 {% else %}
 <section class="section-diet">
     <div class="container-fluid text-center">

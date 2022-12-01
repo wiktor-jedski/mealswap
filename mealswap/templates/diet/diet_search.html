@@ -86,6 +86,39 @@
         </div>
     {% endfor %}
 </section>
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('diet.diet_search', page=pagination.prev_num, date=date, searched=searched) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('diet.diet_search', page=number, date=date, searched=searched) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('diet.diet_search', page=pagination.next_num, date=date, searched=searched) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
 {% else %}
 <section class="section-diet">
     <div class="container-fluid text-center">
