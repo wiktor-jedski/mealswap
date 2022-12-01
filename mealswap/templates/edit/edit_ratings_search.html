@@ -7,9 +7,42 @@
         <h1 class="big-heading">Rating search for: {{ searched }}</h1>
     </div>
 </section>
-{% if items %}
+{% if pagination.items %}
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('edit.edit_ratings_search', page=pagination.prev_num, searched=searched) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('edit.edit_ratings_search', page=number, searched=searched) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('edit.edit_ratings_search', page=pagination.next_num, searched=searched) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
 <section class="section-jumbo">
-    {% for item in items %}
+    {% for item in pagination.items %}
         <div class="row justify-content-center p-3">
             <div class="col-lg-6 col-md-12">
                 <div class="jumbotron">

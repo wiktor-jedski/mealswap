@@ -115,13 +115,18 @@ def get_saved_items(paginate=False, **kwargs) -> list:
     return Item.query.filter_by(saved=True).all()
 
 
-def get_open_items_by_user(user: User) -> list:
+def get_open_items_by_user(user: User, pagination=False, **kwargs) -> list:
     """
     Returns open Items that have been created by provided User.
 
     :param user: the User object that is creator of searched meals
+    :param pagination: boolean for paginating the results. Default is False.
     :return: list of editable (not saved) Item objects
     """
+    if pagination:
+        page = kwargs['page']
+        per_page = kwargs['per_page']
+        return Item.query.filter_by(saved=False, user_id=user.id).paginate(page=page, per_page=per_page)
     return Item.query.filter_by(saved=False, user_id=user.id).all()
 
 
