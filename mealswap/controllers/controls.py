@@ -140,13 +140,19 @@ def get_saved_items_by_name(name: str, paginate=False, **kwargs) -> list:
     return Item.query.filter(Item.name.contains(name), Item.saved == True).all()
 
 
-def get_saved_composed_items_by_name(name: str) -> list:
+def get_saved_composed_items_by_name(name: str, pagination=False, **kwargs) -> list:
     """
     Searches for saved composed Items that can be copied.
 
     :param name: string for name search query
+    :param pagination: boolean for paginating the results. Default is False.
     :return: list of Item objects
     """
+    if pagination:
+        page = kwargs['page']
+        per_page = kwargs['per_page']
+        return Item.query.filter(Item.name.contains(name), Item.saved == True, Item.has_weight == True,
+                                 Item.products is not None, Item.servings > 0).paginate(page=page, per_page=per_page)
     return Item.query.filter(Item.name.contains(name), Item.saved == True, Item.has_weight == True,
                              Item.products is not None, Item.servings > 0).all()
 
