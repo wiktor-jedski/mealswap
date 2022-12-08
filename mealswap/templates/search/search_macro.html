@@ -22,14 +22,80 @@
         {{ fat|round(2)  }} g fat
         {% endif %}
         </p>
-        {% with messages = get_flashed_messages() %}
-            <p class="font-weight-bold">{{ messages[-1] }}</p>
-        {% endwith %}
     </div>
 </section>
-{% if items %}
+{% if pagination.items and item_id %}
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.prev_num, item_id=item_id) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=number, item_id=item_id) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.next_num, item_id=item_id) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% elif pagination.items %}
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.prev_num, protein=protein, carb=carb, fat=fat, calories=calories) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=number, protein=protein, carb=carb, fat=fat, calories=calories) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.next_num, protein=protein, carb=carb, fat=fat, calories=calories) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% if pagination.items %}
 <section class="section-jumbo">
-    {% for item in items %}
+    {% for item in pagination.items %}
         <div class="row justify-content-center p-3">
             <div class="col-lg-6 col-md-12">
                 <div class="jumbotron">
@@ -76,6 +142,75 @@
         </div>
     {% endfor %}
 </section>
+{% if pagination.items and item_id %}
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.prev_num, item_id=item_id) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=number, item_id=item_id) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.next_num, item_id=item_id) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% elif pagination.items %}
+<div class="row justify-content-center">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Pagination buttons">
+        {% if pagination.has_prev %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.prev_num, protein=protein, carb=carb, fat=fat, calories=calories) }}">
+                {{ '<<<' }}
+            </a>
+        {% endif %}
+
+        {% for number in pagination.iter_pages() %}
+            {% if number %}
+                {% if pagination.page != number %}
+                    <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=number, protein=protein, carb=carb, fat=fat, calories=calories) }}">
+                        {{ number }}
+                    </a>
+                {% else %}
+                    <a class="btn btn-success disabled" aria-disabled="true">
+                        {{ number }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-success disabled" aria-disabled="true">
+                    ...
+                </a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a class="page-number btn btn-success" href="{{ url_for('search.search_macro', page=pagination.next_num, protein=protein, carb=carb, fat=fat, calories=calories) }}">
+                {{ '>>>' }}
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 {% else %}
 <section class="section-diet">
     <div class="container-fluid text-center">

@@ -58,7 +58,7 @@ def day(date: str) -> str or Response:
         if diet is None:
             diet = add_diet(user=current_user, date=date)
         update_weight(diet, weight_form.weight.data)
-        flash("Your weight has been updated!")
+        flash("Your weight has been updated!", category='success')
         return redirect(url_for('diet.day', date=date))
     if diet:
         weight_form.weight.data = diet.weight
@@ -145,7 +145,9 @@ def diet_search(searched, date) -> str or Response:
         redirect to search if form for adding meals has not passed validation OR
         redirect to diet if item successfully added
     """
-    items = get_saved_items_by_name(searched)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    items = get_saved_items_by_name(searched, paginate=True, page=page, per_page=per_page)
     form = QtyEaForm()
     if request.method == 'POST':
         request_list = list(request.form)
@@ -167,10 +169,10 @@ def diet_search(searched, date) -> str or Response:
 
         # anonymous form validation
         if qty is None and ea is None:
-            flash("Either qty in grams or ea has to be filled.")
+            flash("Either qty in grams or ea has to be filled.", category='error')
             return redirect(url_for('diet.diet_search', searched=searched, date=date))
         if qty and ea:
-            flash("Please fill only one field - either qty in grams or ea.")
+            flash("Please fill only one field - either qty in grams or ea.", category='error')
             return redirect(url_for('diet.diet_search', searched=searched, date=date))
 
         if diet is None:
@@ -180,4 +182,4 @@ def diet_search(searched, date) -> str or Response:
         
         return redirect(url_for('diet.day', date=date))
     return render_template('diet/diet_search.html',
-                           user=current_user, items=items, date=date, searched=searched, form=form)
+                           user=current_user, pagination=items, date=date, searched=searched, form=form)

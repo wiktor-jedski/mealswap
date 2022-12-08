@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from mealswap.controllers.forms import SearchForm, MacroForm, DiscoverForm, DateQtyEaForm
 from mealswap.controllers.controls import get_element_by_id, Model, get_saved_items_by_name, get_saved_items, \
     get_diet_by_date, add_diet, add_item_to_diet, get_element_list_by_ids
-from .helpers import get_float, get_similar_items, get_predictions
+from .helpers import get_float, get_similar_items, get_predictions, paginate_list
 
 blueprint = Blueprint('search', __name__, static_folder='../static')
 
@@ -49,12 +49,14 @@ def search_replace(searched) -> str or Response:
     :return: rendered search_replace template OR
         redirect to search_macro if an item has been chosen
     """
-    items = get_saved_items_by_name(searched)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+    items = get_saved_items_by_name(searched, paginate=True, page=page, per_page=per_page)
     if request.method == 'POST':
         request_list = list(request.form)
         item_id = request_list[0]
         return redirect(url_for('search.search_macro', item_id=item_id))
-    return render_template('search/search_replace.html', user=current_user, searched=searched, items=items)
+    return render_template('search/search_replace.html', user=current_user, searched=searched, pagination=items)
 
 
 @blueprint.route("/search/replacement", methods=['GET', 'POST'])
@@ -67,6 +69,8 @@ def search_macro() -> str or Response:
     """
     items = get_saved_items()
     item_id = request.args.get('item_id', default=None)
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
 
     # accessing page by choosing an existing item
     if item_id:
@@ -86,6 +90,7 @@ def search_macro() -> str or Response:
         calories = get_float('calories')
 
     similarity_list = get_similar_items(items, protein, carb, fat, calories, item_id)
+    pagination = paginate_list(similarity_list, page, per_page)
 
     form = DateQtyEaForm()
     if request.method == 'POST':
@@ -110,13 +115,13 @@ def search_macro() -> str or Response:
 
         # anonymous form validation
         if qty is None and ea is None:
-            flash("Either qty in grams or ea has to be filled.")
+            flash("Either qty in grams or ea has to be filled.", category='error')
             if item_id:
                 return redirect(url_for('search.search_macro', item_id=item_id))
             else:
                 return redirect(url_for('search.search_macro', protein=protein, carb=carb, fat=fat, calories=calories))
         if qty and ea:
-            flash("Please fill only one field - either qty in grams or ea.")
+            flash("Please fill only one field - either qty in grams or ea.", category='error')
             if item_id:
                 return redirect(url_for('search.search_macro', item_id=item_id))
             else:
@@ -130,8 +135,8 @@ def search_macro() -> str or Response:
         return redirect(url_for('diet.day', date=date))
 
     return render_template('search/search_macro.html',
-                           user=current_user, items=similarity_list, form=form,
-                           name=name, protein=protein, carb=carb, fat=fat, calories=calories)
+                           user=current_user, pagination=pagination, form=form, item_id=item_id,
+                           name=name, protein=protein, carb=carb, fat=fat, calories=calories, page=page)
 
 
 @blueprint.route("/search/discover", methods=['GET', 'POST'])
@@ -143,8 +148,11 @@ def search_discover() -> str or Response:
         redirect to search_discover if adding form has not passed validation OR
         redirect to diet item successfully added
     """
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
     try:
-        items = get_element_list_by_ids(Model.ITEM, session.get('prediction_items'))
+        items = get_element_list_by_ids(Model.ITEM, session.get('prediction_items'),
+                                        paginate=True, page=page, per_page=per_page)
     except sqlalchemy.exc.ArgumentError:
         items = get_predictions(current_user)
         prediction_items = [item.id for item in items]
@@ -173,10 +181,10 @@ def search_discover() -> str or Response:
 
         # anonymous form validation
         if qty is None and ea is None:
-            flash("Either qty in grams or ea has to be filled.")
+            flash("Either qty in grams or ea has to be filled.", category='error')
             return redirect(url_for('search.search_discover'))
         if qty and ea:
-            flash("Please fill only one field - either qty in grams or ea.")
+            flash("Please fill only one field - either qty in grams or ea.", category='error')
             return redirect(url_for('search.search_discover'))
 
         if diet is None:
@@ -186,4 +194,4 @@ def search_discover() -> str or Response:
 
         return redirect(url_for('diet.day', date=date))
 
-    return render_template('search/search_discover.html', user=current_user, items=items, form=form)
+    return render_template('search/search_discover.html', user=current_user, pagination=items, form=form, page=page)

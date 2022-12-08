@@ -1,3 +1,5 @@
+from flask_sqlalchemy import Pagination
+
 from mealswap.models.models import *
 from mealswap.extensions import db
 from enum import Enum
@@ -29,7 +31,7 @@ dictionary = {0: User,
               7: Product}
 
 
-def get_element_by_id(model: Model, element_id: str) -> db.Model or None:
+def get_element_by_id(model: Model, element_id: str or int) -> db.Model or None:
     """
     Searches the table in database and finds object by id.
 
@@ -40,14 +42,20 @@ def get_element_by_id(model: Model, element_id: str) -> db.Model or None:
     return dictionary[model.value].query.filter_by(id=int(element_id)).first()
 
 
-def get_element_list_by_ids(model: Model, element_ids: list) -> list:
+def get_element_list_by_ids(model: Model, element_ids: list, paginate=False, **kwargs) -> list or Pagination:
     """
     Searches the table in database and finds objects by their ids.
 
     :param model: table in the database to be searched
     :param element_ids: list of ids of items to be returned
+    :param paginate: boolean for paginating the results. Default is False.
     :return: list of database objects
     """
+    if paginate:
+        page = kwargs.get('page', 1)
+        per_page = kwargs.get('per_page', 5)
+        return db.session.query(dictionary[model.value])\
+            .filter(dictionary[model.value].id.in_(element_ids)).paginate(page=page, per_page=per_page)
     return db.session.query(dictionary[model.value]).filter(dictionary[model.value].id.in_(element_ids)).all()
 
 
@@ -93,53 +101,79 @@ def get_diets_in_current_month() -> list:
     return DayDiet.query.filter(DayDiet.date.between(first_day, last_day)).all()
 
 
-def get_saved_items() -> list:
+def get_saved_items(paginate=False, **kwargs) -> list:
     """
     Returns list of saved Item objects.
 
+    :param paginate: boolean for paginating the results. Default is False.
     :return: list of saved Item objects
     """
+    if paginate:
+        page = kwargs.get('page', 1)
+        per_page = kwargs.get('per_page', 5)
+        return Item.query.filter_by(saved=True).paginate(page=page, per_page=per_page)
     return Item.query.filter_by(saved=True).all()
 
 
-def get_open_items_by_user(user: User) -> list:
+def get_open_items_by_user(user: User, pagination=False, **kwargs) -> list:
     """
     Returns open Items that have been created by provided User.
 
     :param user: the User object that is creator of searched meals
+    :param pagination: boolean for paginating the results. Default is False.
     :return: list of editable (not saved) Item objects
     """
+    if pagination:
+        page = kwargs['page']
+        per_page = kwargs['per_page']
+        return Item.query.filter_by(saved=False, user_id=user.id).paginate(page=page, per_page=per_page)
     return Item.query.filter_by(saved=False, user_id=user.id).all()
 
 
-def get_saved_items_by_name(name: str) -> list:
+def get_saved_items_by_name(name: str, paginate=False, **kwargs) -> list:
     """
     Searches for Items by comparing their name to provided string.
 
     :param name: string for name search query
+    :param paginate: boolean for paginating the results. Default is False.
     :return: list of Item objects
     """
+    if paginate:
+        page = kwargs['page']
+        per_page = kwargs['per_page']
+        return Item.query.filter(Item.name.contains(name), Item.saved == True).paginate(page=page, per_page=per_page)
     return Item.query.filter(Item.name.contains(name), Item.saved == True).all()
 
 
-def get_saved_composed_items_by_name(name: str) -> list:
+def get_saved_composed_items_by_name(name: str, pagination=False, **kwargs) -> list:
     """
     Searches for saved composed Items that can be copied.
 
     :param name: string for name search query
+    :param pagination: boolean for paginating the results. Default is False.
     :return: list of Item objects
     """
+    if pagination:
+        page = kwargs['page']
+        per_page = kwargs['per_page']
+        return Item.query.filter(Item.name.contains(name), Item.saved == True, Item.has_weight == True,
+                                 Item.products is not None, Item.servings > 0).paginate(page=page, per_page=per_page)
     return Item.query.filter(Item.name.contains(name), Item.saved == True, Item.has_weight == True,
                              Item.products is not None, Item.servings > 0).all()
 
 
-def get_products_by_name(name: str) -> list:
+def get_products_by_name(name: str, paginate=False, **kwargs) -> list:
     """
     Searches for Products by name.
 
     :param name: string for name search query
+    :param paginate: boolean for paginating the results. Default is False.
     :return: list of Product objects
     """
+    if paginate:
+        page = kwargs.get('page', 1)
+        per_page = kwargs.get('per_page', 5)
+        Product.query.filter(Product.name.contains(name)).paginate(page=page, per_page=per_page)
     return Product.query.filter(Product.name.contains(name)).all()
 
 
