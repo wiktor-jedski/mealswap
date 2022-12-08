@@ -40,7 +40,7 @@ class User(UserMixin, db.Model):
         :param confirmed_on: date of user confirmation if verified
         """
         self.email = email
-        self.password = password
+        self.password = generate_password_hash(password)
         self.name = name
         self.admin = admin
         self.registered_on = dt.datetime.now()

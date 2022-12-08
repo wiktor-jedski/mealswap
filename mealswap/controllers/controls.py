@@ -590,7 +590,6 @@ def add_user(email: str, password: str, name: str) -> None:
     :param name: new user's name
     :return: None
     """
-    password = generate_password_hash(password)
     new_user = User(email, password, name, confirmed=False)
     db.session.add(new_user)
     db.session.commit()
