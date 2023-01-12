@@ -1,8 +1,11 @@
 import datetime as dt
+import calendar
+from typing import List
+
 from mealswap.extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declared_attr
 
 
 class User(UserMixin, db.Model):
@@ -124,7 +127,7 @@ class DayDiet(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = relationship('User', back_populates='diets')
     date = db.Column(db.Date, nullable=False)
-    weight = db.Column(db.Float)  # not implemented, weight of the user
+    weight = db.Column(db.Float)
     items = relationship("DietItemAssoc")
 
     def __init__(self, user: User, date: dt.date):
@@ -136,6 +139,18 @@ class DayDiet(db.Model):
         self.user = user
         self.date = date
 
+    @staticmethod
+    def get_diets_in_current_month() -> List:
+        """
+        Returns list of the DayDiet objects in current month.
+
+        :return: list of DayDiet objects
+        """
+        today = dt.date.today()
+        first_day = dt.date(today.year, today.month, 1)
+        last_day = dt.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+        return DayDiet.query.filter(DayDiet.date.between(first_day, last_day)).all()
+
 
 class ItemProductAssoc(db.Model):
     """Association table to join items and products"""
@@ -146,6 +161,227 @@ class ItemProductAssoc(db.Model):
     product_id = db.Column(db.ForeignKey('product.id'))
     qty = db.Column(db.Float, nullable=False)
     product = relationship("Product")
+
+
+class Meal(db.Model):
+    """
+    Represents meal that can be added to the diet.
+
+    Class has relationships with:
+    - User: many-to-one
+    - DayDiet: many-to-many
+    - RatingsAssoc: association
+    """
+    __tablename__ = 'meal'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    protein = db.Column(db.Float, nullable=False)
+    carb = db.Column(db.Float, nullable=False)
+    fat = db.Column(db.Float, nullable=False)
+    calories = db.Column(db.Float, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # user = relationship('User', back_populates='meals')
+    saved = db.Column(db.Boolean)
+    type = db.Column(db.String(20))
+
+    __mapper_args__ = {
+        "polymorphic_identity": "meal",
+        "polymorphic_on": type,
+    }
+
+
+class CompositeProductAssoc(db.Model):
+    """Association table to join meals and products"""
+    __tablename__ = "composite_product_assoc"
+
+    id = db.Column(db.Integer, index=True, primary_key=True)
+    composite_id = db.Column(db.ForeignKey('composite_meal.id'))
+    product_id = db.Column(db.ForeignKey('product_meal.id'))
+    qty = db.Column(db.Float, nullable=False)
+    product = relationship("ProductMeal")
+
+
+class ProductMeal(Meal):
+    """
+    Represents products that can be added to the diet or used as building blocks for ComposedMeal.
+    """
+    __tablename__ = "product_meal"
+    __mapper_args__ = {
+        "polymorphic_identity": "product_meal"
+    }
+    id = db.Column(db.Integer, db.ForeignKey("meal.id"), primary_key=True)
+    units = relationship("ProductMealUnit")
+
+    def __init__(self, name: str, protein: float, carb: float, fat: float, user: User):
+        """
+        Creates a ProductMeal in the database.
+
+        :param name: name of the product
+        :param protein: protein content per 100g
+        :param carb: carb content per 100g
+        :param fat: fat content per 100g
+        :param user: User that created the product
+        """
+        self.name = name
+        self.protein = protein
+        self.carb = carb
+        self.fat = fat
+        self.user = user
+        self.saved = True
+        self.units.append(ProductMealUnit(description="grams", weight=1))
+
+
+class CompositeMeal(Meal):
+    """
+    Represents meals that are composed of ProductMeals.
+    """
+    __tablename__ = "composite_meal"
+    __mapper_args__ = {
+        "polymorphic_identity": "composite_meal"
+    }
+    id = db.Column(db.Integer, db.ForeignKey("meal.id"), primary_key=True)
+    qty = db.Column(db.Float)
+    link = db.Column(db.String(250))
+    recipe = db.Column(db.Text)
+    products = relationship("CompositeProductAssoc")
+    units = relationship("CompositeMealUnit")
+
+    def __init__(self, name: str, user: User, link: str, recipe: str):
+        """
+        Creates a CompositeMeal in the database.
+
+        :param name: name of the meal
+        :param user: User that created the meal
+        :param link: link to the recipe
+        :param recipe: recipe of the meal
+        """
+        self.name = name
+        self.protein = 0
+        self.carb = 0
+        self.fat = 0
+        self.user = user
+        self.qty = 0
+        self.link = link
+        self.recipe = recipe
+        self.saved = False
+        self.units.append(CompositeMealUnit(description="grams", weight=1))
+
+
+class WeightMeal(Meal):
+    """
+    Represents meals with known macronutrient values per weight, but without products.
+    """
+    __tablename__ = "weight_meal"
+    __mapper_args__ = {
+        "polymorphic_identity": "weight_meal"
+    }
+    id = db.Column(db.Integer, db.ForeignKey("meal.id"), primary_key=True)
+    link = db.Column(db.String(250))
+    recipe = db.Column(db.Text)
+    units = relationship("WeightMealUnit")
+
+    def __init__(self, name, protein, carb, fat, user, link, recipe):
+        """
+        Creates a WeightMeal in the database.
+
+        :param name: name of the meal
+        :param protein: protein content per 100g
+        :param carb: carb content per 100g
+        :param fat: fat content per 100g
+        :param user: User that created the meal
+        :param link: link to the recipe
+        :param recipe: recipe of the meal
+        """
+        self.name = name
+        self.protein = protein
+        self.carb = carb
+        self.fat = fat
+        self.user = user
+        self.link = link
+        self.recipe = recipe
+        self.saved = True
+        self.units.append(WeightMealUnit(description="grams", weight=1))
+
+
+class ServingMeal(Meal):
+    """
+    Represents meals with known macronutrient values per serving, but without products.
+    """
+    __tablename__ = "serving_meal"
+    __mapper_args__ = {
+        "polymorphic_identity": "serving_meal"
+    }
+    id = db.Column(db.Integer, db.ForeignKey("meal.id"), primary_key=True)
+    link = db.Column(db.String(250))
+    recipe = db.Column(db.Text)
+
+    def __init__(self, name, protein, carb, fat, user, link, recipe):
+        """
+        Create a ServingMeal in the database.
+
+        :param name: name of the meal
+        :param protein: protein content per 100g
+        :param carb: carb content per 100g
+        :param fat: fat content per 100g
+        :param user: User that created the meal
+        :param link: link to the recipe
+        :param recipe: recipe of the meal
+        """
+        self.name = name
+        self.protein = protein
+        self.carb = carb
+        self.fat = fat
+        self.user = user
+        self.link = link
+        self.recipe = recipe
+        self.saved = True
+
+
+class MealUnit(db.Model):
+    """
+    Represents a unit of weight for meals (e.g. a spoon, a bowl, a cup)
+    """
+    __tablename__ = 'weight_unit'
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(250), nullable=False)
+    weight = db.Column(db.Float, nullable=False)
+    type = db.Column(db.String(20))
+
+    __mapper_args__ = {
+        "polymorphic_identity": "meal_unit",
+        "polymorphic_on": type,
+    }
+
+    def __init__(self, description, weight):
+        """
+        Creates a unit of weight.
+
+        :param description: short description of a unit
+        :param weight: how much weight the unit contains in grams
+        """
+        self.description = description
+        self.weight = weight
+
+
+class WeightMealUnit(MealUnit):
+    __mapper_args__ = {
+        "polymorphic_identity": "weight_meal_unit"
+    }
+    weight_meal_id = db.Column(db.Integer, db.ForeignKey("weight_meal.id"))
+
+
+class ProductMealUnit(MealUnit):
+    __mapper_args__ = {
+        "polymorphic_identity": "product_meal_unit"
+    }
+    product_meal_id = db.Column(db.Integer, db.ForeignKey("product_meal.id"))
+
+
+class CompositeMealUnit(MealUnit):
+    __mapper_args__ = {
+        "polymorphic_identity": "composite_meal_unit"
+    }
+    composite_meal_id = db.Column(db.Integer, db.ForeignKey("composite_meal.id"))
 
 
 class Item(db.Model):
