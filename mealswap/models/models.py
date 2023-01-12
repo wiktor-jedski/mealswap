@@ -103,6 +103,17 @@ class RatingsAssoc(db.Model):
     item = relationship("Item")
 
 
+class RatingAssoc(db.Model):
+    """Association table to represent meal ratings by users."""
+    __tablename__ = 'rating_assoc'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey('user.id'))
+    meal_id = db.Column(db.ForeignKey('meal.id'))
+    rating = db.Column(db.Integer, nullable=False)
+    meal = relationship("Meal")
+
+
 class DietItemAssoc(db.Model):
     """Association table to represent items contained in particular diet days."""
     __tablename__ = "diet_item_assoc"
@@ -189,6 +200,23 @@ class Meal(db.Model):
         "polymorphic_on": type,
     }
 
+    def set_rating(self, user: User, rating: str) -> RatingAssoc:
+        """
+        Sets rating for Meal by User by adding RatingAssoc object to database.
+
+        :param user: User that sets the rating
+        :param rating: the rating of Meal by User
+        :return: RatingAssoc object
+        """
+        assoc = RatingAssoc.query.filter_by(meal_id=self.id, user_id=user.id).first()
+        if assoc:
+            assoc.rating = int(rating)
+        else:
+            assoc = RatingAssoc(rating=int(rating))
+            assoc.meal = self
+            user.ratings.append(assoc)
+        db.session.commit()
+
 
 class CompositeProductAssoc(db.Model):
     """Association table to join meals and products"""
@@ -230,6 +258,11 @@ class ProductMeal(Meal):
         self.saved = True
         self.units.append(ProductMealUnit(description="grams", weight=1))
 
+        db.session.add(self)
+        db.session.commit()
+
+
+
 
 class CompositeMeal(Meal):
     """
@@ -265,6 +298,139 @@ class CompositeMeal(Meal):
         self.recipe = recipe
         self.saved = False
         self.units.append(CompositeMealUnit(description="grams", weight=1))
+        
+        db.session.add(self)
+        db.session.commit()
+        
+    def set_qty(self, assoc: CompositeProductAssoc, new_qty: float) -> None:
+        """
+        Updates quantity of ProductMeal in CompositeMeal.
+
+        :param assoc: CompositeProductAssoc that connects CompositeMeal to the ProductMeal
+        :param new_qty: new quantity defined by editor
+        :return: None
+        """
+        old_qty = assoc.qty
+        assoc.qty = new_qty
+
+        delta = assoc.qty - old_qty
+        old_self_qty = self.qty
+        self.qty = self.qty + delta
+
+        # defining new macronutrient values per 100g
+        self.carb = (self.carb * old_self_qty + delta * assoc.product.carb) / self.qty
+        self.calories = (self.calories * old_self_qty + delta * assoc.product.calories) / self.qty
+        self.protein = (self.protein * old_self_qty + delta * assoc.product.protein) / self.qty
+        self.fat = (self.fat * old_self_qty + delta * assoc.product.fat) / self.qty
+
+        db.session.commit()
+
+        return None
+
+    def clear(self) -> None:
+        """
+        Deletes all CompositeProductAssocs in Meal and changes macronutrient values to 0.
+
+        :return: None
+        """
+        while self.products:
+            assoc = self.products.pop()
+            db.session.delete(assoc)
+        self.calories = 0
+        self.carb = 0
+        self.protein = 0
+        self.fat = 0
+        self.qty = 0
+        db.session.commit()
+
+        return None
+
+    def delete(self) -> None:
+        """
+        Deletes CompositeMeal from database.
+
+        :return: None
+        """
+        self.clear()
+        db.session.delete(self)
+        db.session.commit()
+
+        return None
+
+    def save(self) -> None:
+        """
+        Changes 'saved' value of CompositeMeal to True, enabling adding to diet but disabling editing the meal.
+
+        :return: None
+        """
+        self.saved = True
+        db.session.commit()
+
+        return None
+
+    def add_product(self, product: ProductMeal, qty: float) -> None:
+        """
+        Adds a ProductMeal to CompositeMeal.
+
+        :param product: ProductMeal that is added to CompositeMeal
+        :param qty: weight of the added ProductMeal
+        :return: None
+        """
+        assoc = CompositeProductAssoc(qty=0)
+        assoc.product = product
+        self.products.append(assoc)
+        self.set_qty(assoc, qty)
+
+        return None
+
+    def copy(self, other):
+        """
+        Substitutes current data of CompositeMeal with a different CompositeMeal data.
+
+        :param CompositeMeal other: CompositeMeal that is copied
+        :return: None
+        """
+        while self.products:
+            assoc = self.products.pop()
+            db.session.delete(assoc)
+
+        for assoc in other.products:
+            new_assoc = CompositeProductAssoc()
+            new_assoc.product = assoc.product
+            new_assoc.qty = assoc.qty
+            self.products.append(new_assoc)
+
+        self.carb = other.carb
+        self.calories = other.calories
+        self.protein = other.protein
+        self.fat = other.fat
+        self.qty = other.qty
+        self.recipe = other.recipe
+        self.link = other.link
+        db.session.commit()
+
+        return None
+
+    def remove_product(self, assoc: CompositeProductAssoc) -> None:
+        """
+        Removes ProductMeal from CompositeMeal.
+
+        :param assoc: CompositeProductAssoc to be removed
+        :return: None
+        """
+        if self.qty - assoc.qty != 0:
+            self.set_qty(assoc, 0)
+        else:
+            self.carb = 0
+            self.calories = 0
+            self.fat = 0
+            self.protein = 0
+
+        self.products.remove(assoc)
+        db.session.delete(assoc)
+        db.session.commit()
+
+        return None
 
 
 class WeightMeal(Meal):
@@ -301,6 +467,9 @@ class WeightMeal(Meal):
         self.recipe = recipe
         self.saved = True
         self.units.append(WeightMealUnit(description="grams", weight=1))
+        
+        db.session.add(self)
+        db.session.commit()
 
 
 class ServingMeal(Meal):
@@ -335,6 +504,9 @@ class ServingMeal(Meal):
         self.link = link
         self.recipe = recipe
         self.saved = True
+        
+        db.session.add(self)
+        db.session.commit()
 
 
 class MealUnit(db.Model):
@@ -361,6 +533,9 @@ class MealUnit(db.Model):
         """
         self.description = description
         self.weight = weight
+        
+        db.session.add(self)
+        db.session.commit()
 
 
 class WeightMealUnit(MealUnit):
