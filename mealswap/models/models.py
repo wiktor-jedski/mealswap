@@ -8,6 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.orm import relationship, declared_attr
 
 
+# old models
 class User(UserMixin, db.Model):
     """A class used to represent users of the app
 
@@ -51,12 +52,16 @@ class User(UserMixin, db.Model):
         self.confirmed_on = confirmed_on
         self.settings.append(Settings())
 
+        db.session.add(self)
+        db.session.commit()
+
     def set_password(self, value: str):
         """Set password
 
         :param value: user input
         """
         self.password = generate_password_hash(value)
+        db.session.commit()
 
     def check_password(self, value: str):
         """Checks password hash
@@ -68,6 +73,7 @@ class User(UserMixin, db.Model):
     def delete_account(self):
         """Terminates account"""
         self.confirmed = False
+        db.session.commit()
 
     def __repr__(self):
         """User class representation as a string"""
@@ -77,8 +83,7 @@ class User(UserMixin, db.Model):
 class Settings(db.Model):
     """A class used to represent user settings (one-to-one relationship)
 
-    Settings include macronutrient goals (parameters protein_goal, carb_goal, fat_goal, calories_goal) and locale
-    (not implemented)
+    Settings include macronutrient goals (parameters protein_goal, carb_goal, fat_goal, calories_goal)
     """
     __tablename__ = 'settings'
 
@@ -89,7 +94,48 @@ class Settings(db.Model):
     carb_goal = db.Column(db.Float)
     fat_goal = db.Column(db.Float)
     calories_goal = db.Column(db.Float)
-    locale = db.Column(db.String(250))
+
+    def set_percentage_diet_goals(self, calories: float, protein: int, carb: int, fat: int) -> None:
+        """
+        Changes diet goals for the User in Settings.
+        Sets goals as percentages of total caloric intake.
+
+        :param calories: caloric goal in kcal
+        :param protein: protein goal as percentage
+        :param carb: carb goal as percentage
+        :param fat: fat goal as percentage
+        :return: None
+        """
+        self.calories_goal = calories
+        self.protein_goal = calories * protein / 100 / 4
+        self.carb_goal = calories * carb / 100 / 4
+        self.fat_goal = calories * fat / 100 / 9
+        db.session.commit()
+
+        return None
+
+    def set_weighted_diet_goals(self, calories: float, protein: float, carb: float, fat: float) -> None:
+        """
+        Changes diet goals for the User in Settings.
+        Sets goals as weight of macronutrients/number of calories.
+
+        :param calories: caloric goal in kcal
+        :param protein: protein goal in grams
+        :param carb: carb goal in grams
+        :param fat: fat goal in grams
+        :return: None
+        """
+        if calories:
+            self.calories_goal = calories
+        if protein:
+            self.protein_goal = protein
+        if carb:
+            self.carb_goal = carb
+        if fat:
+            self.fat_goal = fat
+        db.session.commit()
+
+        return None
 
 
 class RatingsAssoc(db.Model):
@@ -101,17 +147,6 @@ class RatingsAssoc(db.Model):
     item_id = db.Column(db.ForeignKey('item.id'))
     rating = db.Column(db.Integer, nullable=False)
     item = relationship("Item")
-
-
-class RatingAssoc(db.Model):
-    """Association table to represent meal ratings by users."""
-    __tablename__ = 'rating_assoc'
-
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.ForeignKey('user.id'))
-    meal_id = db.Column(db.ForeignKey('meal.id'))
-    rating = db.Column(db.Integer, nullable=False)
-    meal = relationship("Meal")
 
 
 class DietItemAssoc(db.Model):
@@ -163,6 +198,112 @@ class DayDiet(db.Model):
         return DayDiet.query.filter(DayDiet.date.between(first_day, last_day)).all()
 
 
+class Item(db.Model):
+    """A class that represents item - food that can be added to diet.
+
+    Class has relationships with:
+    - User: many-to-one
+    - DayDiet: many-to-many
+    - Product: many-to-many
+    - RatingsAssoc: association
+    """
+    __tablename__ = 'item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    protein = db.Column(db.Float, nullable=False)
+    carb = db.Column(db.Float, nullable=False)
+    fat = db.Column(db.Float, nullable=False)
+    calories = db.Column(db.Float, nullable=False)
+    has_weight = db.Column(db.Boolean, nullable=False)
+    servings = db.Column(db.Integer)
+    qty = db.Column(db.Float)
+    link = db.Column(db.String(250))
+    recipe = db.Column(db.Text)
+    saved = db.Column(db.Boolean)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = relationship('User', back_populates='items')
+    products = relationship("ItemProductAssoc")
+
+    def __init__(self, name: str, protein: float, carb: float, fat: float, user: User, has_weight: bool, qty: float,
+                 servings: int, calories: float = None, link: str = None, recipe: str = None, saved: bool = None):
+        """
+        :param name: name of the item
+        :param protein: protein amount per 100g or ea of food
+        :param carb: carbohydrate amount per 100g or ea of food
+        :param fat: fat amount per 100g or ea of food
+        :param user: user adding the item
+        :param has_weight: weighted meal flag; if True, the macronutrient values are amounts per 100g, otherwise they
+        are amounts per ea
+        :param qty: total weight of the meal
+        :param servings: number of servings that can be made of the total weight
+        :param calories: number of calories. Default None means that calories are calculated from macronutrient values
+        :param link: link to the recipe and/or item details
+        :param recipe: recipe text
+        :param saved: if True, the meal cannot be edited but can be added to diet; if False, the meal can be edited,
+        but has to be saved before adding to diet
+        """
+        self.name = name
+        self.protein = protein
+        self.carb = carb
+        self.fat = fat
+        self.user_id = user.id
+        self.user = user
+        self.has_weight = has_weight
+        self.qty = qty
+        self.servings = servings
+        if calories:
+            self.calories = calories
+        else:
+            self.calories = protein*4 + carb*4 + fat*9
+        if link:
+            self.link = link
+        if recipe:
+            self.recipe = recipe
+        if saved:
+            self.saved = True
+        else:
+            self.saved = False
+
+
+class Product(db.Model):
+    """A class that represents products that are building blocks of meals.
+
+    Class has relationships with:
+    - Item: many-to-many
+    """
+    __tablename__ = 'product'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), nullable=False)
+    protein = db.Column(db.Float, nullable=False)
+    carb = db.Column(db.Float, nullable=False)
+    fat = db.Column(db.Float, nullable=False)
+    calories = db.Column(db.Float, nullable=False)
+    weight_per_ea = db.Column(db.Float)
+
+    def __init__(self, name: str, protein: float, carb: float, fat: float, weight_per_ea: float,
+                 calories: float = None):
+        """
+        :param name: name of the product
+        :param protein: amount of protein per 100g
+        :param carb: amount of carbohydrates per 100g
+        :param fat: amount of fat per 100g
+        :param weight_per_ea: how much 1 ea of products weighs (optional)
+        :param calories: amount of calories per 100g. Default None means that calories are calculated from
+        macronutrient values
+        """
+        self.name = name
+        self.protein = protein
+        self.carb = carb
+        self.fat = fat
+        if calories:
+            self.calories = calories
+        else:
+            self.calories = protein*4 + carb*4 + fat*9
+        self.weight_per_ea = weight_per_ea
+
+
 class ItemProductAssoc(db.Model):
     """Association table to join items and products"""
     __tablename__ = "item_product_assoc"
@@ -172,6 +313,18 @@ class ItemProductAssoc(db.Model):
     product_id = db.Column(db.ForeignKey('product.id'))
     qty = db.Column(db.Float, nullable=False)
     product = relationship("Product")
+
+
+# NEW MODELS
+class RatingAssoc(db.Model):
+    """Association table to represent meal ratings by users."""
+    __tablename__ = 'rating_assoc'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.ForeignKey('user.id'))
+    meal_id = db.Column(db.ForeignKey('meal.id'))
+    rating = db.Column(db.Integer, nullable=False)
+    meal = relationship("Meal")
 
 
 class Meal(db.Model):
@@ -216,6 +369,8 @@ class Meal(db.Model):
             assoc.meal = self
             user.ratings.append(assoc)
         db.session.commit()
+
+        return assoc
 
 
 class CompositeProductAssoc(db.Model):
@@ -262,8 +417,6 @@ class ProductMeal(Meal):
         db.session.commit()
 
 
-
-
 class CompositeMeal(Meal):
     """
     Represents meals that are composed of ProductMeals.
@@ -298,10 +451,10 @@ class CompositeMeal(Meal):
         self.recipe = recipe
         self.saved = False
         self.units.append(CompositeMealUnit(description="grams", weight=1))
-        
+
         db.session.add(self)
         db.session.commit()
-        
+
     def set_qty(self, assoc: CompositeProductAssoc, new_qty: float) -> None:
         """
         Updates quantity of ProductMeal in CompositeMeal.
@@ -467,7 +620,7 @@ class WeightMeal(Meal):
         self.recipe = recipe
         self.saved = True
         self.units.append(WeightMealUnit(description="grams", weight=1))
-        
+
         db.session.add(self)
         db.session.commit()
 
@@ -504,7 +657,7 @@ class ServingMeal(Meal):
         self.link = link
         self.recipe = recipe
         self.saved = True
-        
+
         db.session.add(self)
         db.session.commit()
 
@@ -533,7 +686,7 @@ class MealUnit(db.Model):
         """
         self.description = description
         self.weight = weight
-        
+
         db.session.add(self)
         db.session.commit()
 
@@ -559,107 +712,134 @@ class CompositeMealUnit(MealUnit):
     composite_meal_id = db.Column(db.Integer, db.ForeignKey("composite_meal.id"))
 
 
-class Item(db.Model):
-    """A class that represents item - food that can be added to diet.
+class DietMealAssoc(db.Model):
+    """Association table to represent meals contained in particular diet days."""
+    __tablename__ = "diet_meal_assoc"
+
+    id = db.Column(db.Integer, index=True, primary_key=True, autoincrement=True)
+    diet_id = db.Column(db.ForeignKey('diet.id'))
+    meal_id = db.Column(db.ForeignKey('meal.id'))
+    qty = db.Column(db.Float, nullable=False)
+    meal = relationship("Meal")
+
+    def edit_qty(self, new_qty: float) -> None:
+        """
+        Edits quantity for a Meal in Diet.
+
+        :param new_qty: new quantity for chosen meal
+        :return: None
+        """
+        self.qty = new_qty
+        db.session.commit()
+
+        return None
+
+
+class Diet(db.Model):
+    """
+    Represents diet for a given day.
 
     Class has relationships with:
-    - User: many-to-one
-    - DayDiet: many-to-many
-    - Product: many-to-many
-    - RatingsAssoc: association
+    - Meal class - many-to-many
+    - User class - many-to-one
     """
-    __tablename__ = 'item'
+    __tablename__ = 'diet'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    protein = db.Column(db.Float, nullable=False)
-    carb = db.Column(db.Float, nullable=False)
-    fat = db.Column(db.Float, nullable=False)
-    calories = db.Column(db.Float, nullable=False)
-    has_weight = db.Column(db.Boolean, nullable=False)
-    servings = db.Column(db.Integer)
-    qty = db.Column(db.Float)
-    link = db.Column(db.String(250))
-    recipe = db.Column(db.Text)
-    saved = db.Column(db.Boolean)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = relationship('User', back_populates='items')
-    products = relationship("ItemProductAssoc")
+    user = relationship('User', back_populates='diets')
+    date = db.Column(db.Date, nullable=False)
+    weight = db.Column(db.Float)
+    meals = relationship("DietMealAssoc")
 
-    def __init__(self, name: str, protein: float, carb: float, fat: float, user: User, has_weight: bool, qty: float,
-                 servings: int, calories: float = None, link: str = None, recipe: str = None, saved: bool = None):
+    @staticmethod
+    def get_diets_in_current_month() -> List:
         """
-        :param name: name of the item
-        :param protein: protein amount per 100g or ea of food
-        :param carb: carbohydrate amount per 100g or ea of food
-        :param fat: fat amount per 100g or ea of food
-        :param user: user adding the item
-        :param has_weight: weighted meal flag; if True, the macronutrient values are amounts per 100g, otherwise they
-        are amounts per ea
-        :param qty: total weight of the meal
-        :param servings: number of servings that can be made of the total weight
-        :param calories: number of calories. Default None means that calories are calculated from macronutrient values
-        :param link: link to the recipe and/or item details
-        :param recipe: recipe text
-        :param saved: if True, the meal cannot be edited but can be added to diet; if False, the meal can be edited,
-        but has to be saved before adding to diet
+        Returns list of the DayDiet objects in current month.
+
+        :return: list of DayDiet objects
         """
-        self.name = name
-        self.protein = protein
-        self.carb = carb
-        self.fat = fat
+        today = dt.date.today()
+        first_day = dt.date(today.year, today.month, 1)
+        last_day = dt.date(today.year, today.month, calendar.monthrange(today.year, today.month)[1])
+        return Diet.query.filter(DayDiet.date.between(first_day, last_day)).all()
+
+    def __init__(self, user: User, date: dt.date or str):
+        """
+        Creates a new Diet in database.
+
+        :param user: owner of the diet day
+        :param date: date of the diet
+        """
         self.user_id = user.id
         self.user = user
-        self.has_weight = has_weight
-        self.qty = qty
-        self.servings = servings
-        if calories:
-            self.calories = calories
-        else:
-            self.calories = protein*4 + carb*4 + fat*9
-        if link:
-            self.link = link
-        if recipe:
-            self.recipe = recipe
-        if saved:
-            self.saved = True
-        else:
-            self.saved = False
+        if type(date) == str:
+            date = dt.datetime.strptime(date, "%Y-%m-%d").date()
+        self.date = date
 
+        db.session.add(self)
+        db.session.commit()
 
-class Product(db.Model):
-    """A class that represents products that are building blocks of meals.
-
-    Class has relationships with:
-    - Item: many-to-many
-    """
-    __tablename__ = 'product'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    protein = db.Column(db.Float, nullable=False)
-    carb = db.Column(db.Float, nullable=False)
-    fat = db.Column(db.Float, nullable=False)
-    calories = db.Column(db.Float, nullable=False)
-    weight_per_ea = db.Column(db.Float)
-
-    def __init__(self, name: str, protein: float, carb: float, fat: float, weight_per_ea: float,
-                 calories: float = None):
+    def copy(self, other) -> None:
         """
-        :param name: name of the product
-        :param protein: amount of protein per 100g
-        :param carb: amount of carbohydrates per 100g
-        :param fat: amount of fat per 100g
-        :param weight_per_ea: how much 1 ea of products weighs (optional)
-        :param calories: amount of calories per 100g. Default None means that calories are calculated from
-        macronutrient values
+        Copies a Diet data from another date.
+
+        :param Diet other: Diet that is copied
+        :return: None
         """
-        self.name = name
-        self.protein = protein
-        self.carb = carb
-        self.fat = fat
-        if calories:
-            self.calories = calories
-        else:
-            self.calories = protein*4 + carb*4 + fat*9
-        self.weight_per_ea = weight_per_ea
+        for assoc in other.meals:
+            new_assoc = DietMealAssoc(qty=assoc.qty, meal=assoc.meal)
+            self.meals.append(new_assoc)
+        db.session.commit()
+
+        return None
+
+    def delete(self) -> None:
+        """
+        Deletes Diet from database.
+
+        :return: None
+        """
+        db.session.delete(self)
+        db.session.commit()
+
+        return None
+
+    def remove_meal(self, assoc: DietMealAssoc) -> None:
+        """
+        Deletes Meal from Diet.
+
+        :param assoc: DietMealAssoc that connects Meal to Diet
+        :return: None
+        """
+        self.meals.remove(assoc)
+        db.session.delete(assoc)
+        db.session.commit()
+
+        return None
+
+    def add_meal(self, qty: float, meal: Meal) -> None:
+        """
+        Adds Meal to Diet.
+
+        :param meal: Meal to be added to Diet
+        :param qty: number of grams/servings to be added, depending on the meal type
+        :return: None
+        """
+        assoc = DietMealAssoc(qty=qty, meal=meal)
+        self.meals.append(assoc)
+        db.session.commit()
+
+        return None
+
+    def update_weight(self, weight: float) -> None:
+        """
+        Updates User weight for the day.
+
+        :param weight: weight of the User
+        :return: None
+        """
+        self.weight = weight
+        db.session.commit()
+
+        return None
