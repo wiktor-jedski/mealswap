@@ -35,7 +35,7 @@ def get_calendar():
         table_rows += "\t<td></td>\n"
     day_count = 1
     for day in range(first_day_weekday, 7):
-        date = f'{year}-{month}-{day_count:02d}'
+        date = f'{year}-{month:02d}-{day_count:02d}'
         if day_count in days:
             table_rows += f'\t<td class="filled">' \
                           f'<a href="/day/{date}">{day_count}</a>' \
@@ -49,7 +49,7 @@ def get_calendar():
 
     weekday_count = 1
     while True:
-        date = f'{year}-{month}-{day_count:02d}'
+        date = f'{year}-{month:02d}-{day_count:02d}'
         if day_count in days:
             table_rows += f'\t<td class="filled">' \
                           f'<a href="/day/{date}">{day_count}</a>' \
