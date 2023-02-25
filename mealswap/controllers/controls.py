@@ -173,7 +173,7 @@ def get_products_by_name(name: str, paginate=False, **kwargs) -> list:
     if paginate:
         page = kwargs.get('page', 1)
         per_page = kwargs.get('per_page', 5)
-        Product.query.filter(Product.name.contains(name)).paginate(page=page, per_page=per_page)
+        return Product.query.filter(Product.name.contains(name)).paginate(page=page, per_page=per_page)
     return Product.query.filter(Product.name.contains(name)).all()
 
 

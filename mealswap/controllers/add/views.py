@@ -156,7 +156,7 @@ def compose_search(item_id: str, searched: str) -> str or Response:
     """
     page = request.args.get('page', 1, type=int)
     per_page = 5
-    products = get_products_by_name(searched, paginate=True, page=page, per_page=5)
+    products = get_products_by_name(searched, paginate=True, page=page, per_page=per_page)
     form = QtyEaForm()
     if request.method == 'POST':
         request_list = list(request.form)
